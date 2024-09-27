@@ -1,0 +1,4 @@
+oracledb
+requests
+fastapi
+python-dotenv
