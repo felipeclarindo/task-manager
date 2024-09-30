@@ -2,3 +2,4 @@ oracledb
 requests
 fastapi
 python-dotenv
+fastapi[standard]
