@@ -27,7 +27,7 @@ def validate_prioridade(prioridade: str) -> bool:
     try:
         if prioridade:
             prioridade = prioridade.strip().lower()
-            if prioridade in ["baixa", "media", "alta"]:
+            if prioridade in ["baixa", "media", "média", "alta"]:
                 return True
             else:
                 raise ValidateError("Prioridade invalida.")
@@ -41,7 +41,25 @@ def validate_prioridade(prioridade: str) -> bool:
         print(f"Erro: {e}")
     return False
 
-
+def validate_prazo(prazo: str) -> bool:
+    try:
+        if prazo:
+            prazo = prazo.strip()
+            if prazo.isdigit():
+                if int(prazo) > 0:
+                    return True
+                else:
+                    raise ValueError("O Prazo mínimo é 1.")
+            else:
+                raise ValueError(f"O Prazo precisa ser um número.")
+        else:
+            raise ValueError("Prazo não pode ser vazio.")
+    except ValueError as e:
+        print(f"Erro de Valor: {e}")
+    except Exception as e:
+        print(f"Erro: {e}")
+    return False
+    
 def validate_status(status: str) -> bool:
     try:
         if status:
@@ -50,8 +68,12 @@ def validate_status(status: str) -> bool:
                 return True
             else:
                 raise ValidateError("Status invalido!")
+        else:
+            raise ValueError("Status não pode ser vazio.")
     except ValidateError as e:
         print(f"Erro de Validação: {e}")
+    except ValueError as e:
+        print(f"Erro de Valor: {e}")
     except Exception as e:
         print(f"Erro: {e}")
     return False

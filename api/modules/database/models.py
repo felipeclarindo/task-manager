@@ -1,10 +1,10 @@
-from config import connect
-from .validations.validations import (
+from .config import connect
+from ..validations.validations import (
     validate_prioridade,
-    validate_status,
+    validate_prazo,
     validate_title,
 )
-from .utils.utils import check_user_state, EstadoUser, date_today, due_date
+from ..utils.utils import generate_state, check_user_state, EstadoUser, date_today, due_date
 from datetime import date, datetime
 import json
 
@@ -14,42 +14,45 @@ class Crud:
         self.connection = connect()
 
     # Validação de dados antes do envio
-    def post_validate(self, title: str, prioridade: str, prazo: int) -> None:
-        self.validacoes = [
-            validate_title(title),
+    def post_validate(self, titulo: str, prioridade: str, prazo: str) -> None:
+        validacoes = [
+            validate_title(titulo),
             validate_prioridade(prioridade),
-            validate_prazo(prazo),
+            validate_prazo(prazo)
         ]
-        self.user_state = check_user_state(self.validacoes)
+        print(validacoes)
+        self.user_state = check_user_state(validacoes)
 
     # Inserir dados no banco de dados
     def post(
         self,
         titulo: str,
         prioridade: str,
-        prazo: int,
+        prazo: str,
     ) -> dict:
         try:
-            self.post_validate(titulo, prioridade, status, prazo)
+            self.post_validate(titulo, prioridade, prazo)
+            print(self.user_state)
             if self.user_state == EstadoUser.LIBERADO:
                 data_criacao = date_today()
-                data_vencimento = due_date(data_criacao, prazo)
-                command = f"INSERT INTO relatos (titulo, prioridade, status, data_vencimento, data_criacao) VALUES (:1, :2, :3, TO_DATE(:4, 'YYYY-MM-DD'), TO_DATE(:5, 'YYYY-MM-DD'))"                cursor = self.connection.cursor()
+                data_vencimento = due_date(prazo,)
+                command = f"INSERT INTO relatos (titulo, prioridade, status, data_vencimento, data_criacao) VALUES (:titulo, :prioridade, :status, TO_DATE(:data_vencimento, 'YYYY-MM-DD'), TO_DATE(:data_criacao, 'YYYY-MM-DD'))"
+                cursor = self.connection.cursor()
                 cursor.execute(
                     command,
-                    (
-                        titulo,
-                        prioridade,
-                        generate_state(data_criacao, data_vencimento),
-                        data_vencimento,
-                        data_criacao
-                    ),
+                    {
+                        "titulo": titulo,
+                        "prioridade": prioridade,
+                        "status": generate_state(data_criacao, data_vencimento),
+                        "data_vencimento": data_vencimento,
+                        "data_criacao": data_criacao
+                    },
                 )
                 self.connection.commit()
                 cursor.close()
                 return {"status": "success"}
             else:
-                return {"status": "error", "message": "404"}
+                raise Exception("Falha na validação.")
         except ValueError as v:
             return {"status": "error", "message": str(v)}
         except Exception as e:
@@ -61,12 +64,12 @@ class Crud:
         id: int,
         titulo: str,
         prioridade: str,
-        prazo: int
+        prazo: str
     ) -> dict:
         try:
-            self.post_validate(titulo, prioridade, status)
+            self.post_validate(titulo, prioridade, prazo)
             if self.user_state == EstadoUser.LIBERADO:
-                command = "UPDATE relatos SET titulo = :titulo, data_vencimento = :TO_DATE(data_vencimento, 'YYYY-MM-DD'), prioridade = :prioridade, status = :status WHERE id = :id"
+                command = "UPDATE relatos SET titulo = :titulo, data_vencimento = TO_DATE(:data_vencimento, 'YYYY-MM-DD'), prioridade = :prioridade, status = :status WHERE id = :id"
                 cursor = self.connection.cursor()
                 cursor.execute(
                     command,
@@ -94,16 +97,30 @@ class Crud:
             if dado not in ["titulo", "data_vencimento", "prioridade", "status"]:
                 raise ValueError("Nome de coluna inválido.")
             if dado == "data_vencimento":
-                command = f"UPDATE relatos SET {dado} = :TO_DATE(novo_dado, 'YYYY-MM-DD') WHERE ID = :id"
+                command = f"UPDATE relatos SET :dado = TO_DATE(:novo_dado, 'YYYY-MM-DD') WHERE ID = :id"
                 cursor = self.connection.cursor()
-                cursor.execute(command, {"novo_dado": due_date(novo_dado), "id": id})
+                cursor.execute(
+                    command, 
+                    {   
+                        "dado": dado,
+                        "novo_dado": due_date(novo_dado), 
+                        "id": id
+                    }
+                )
                 cursor.close()
                 self.connection.commit()
                 return {"status": "success"}
             else:
-                command = f"UPDATE relatos SET {dado} = :novo_dado WHERE ID = :id"
+                command = f"UPDATE relatos SET :dado = :novo_dado WHERE ID = :id"
                 cursor = self.connection.cursor()
-                cursor.execute(command, {"novo_dado": novo_dado, "id": id})
+                cursor.execute(
+                    command, 
+                    {   
+                        "dado": dado,
+                        "novo_dado": novo_dado, 
+                        "id": id,
+                    }
+                )
                 cursor.close()
                 self.connection.commit()
                 return {"status": "success"}
