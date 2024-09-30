@@ -10,15 +10,15 @@ import json
 
 
 class Crud:
-    def __init__(self):
+    def __init__(self) -> None:
         self.connection = connect()
 
     # Validação de dados antes do envio
-    def post_validate(self, title: str, prioridade: str, status: str):
+    def post_validate(self, title: str, prioridade: str, prazo: int) -> None:
         self.validacoes = [
             validate_title(title),
             validate_prioridade(prioridade),
-            validate_status(status),
+            validate_prazo(prazo),
         ]
         self.user_state = check_user_state(self.validacoes)
 
@@ -26,23 +26,23 @@ class Crud:
     def post(
         self,
         titulo: str,
-        data_vencimento: int,
         prioridade: str,
-        status: str,
-    ):
+        prazo: int,
+    ) -> dict:
         try:
-            self.post_validate(titulo, prioridade, status)
+            self.post_validate(titulo, prioridade, status, prazo)
             if self.user_state == EstadoUser.LIBERADO:
-                command = f"INSERT INTO relatos (titulo, data_vencimento, prioridade, status, data_criacao) VALUES (:1, :2, TO_DATE(:3, 'YYYY-MM-DD'), :4, :5, TO_DATE(:6, 'YYYY-MM-DD'))"
-                cursor = self.connection.cursor()
+                data_criacao = date_today()
+                data_vencimento = due_date(data_criacao, prazo)
+                command = f"INSERT INTO relatos (titulo, prioridade, status, data_vencimento, data_criacao) VALUES (:1, :2, :3, TO_DATE(:4, 'YYYY-MM-DD'), TO_DATE(:5, 'YYYY-MM-DD'))"                cursor = self.connection.cursor()
                 cursor.execute(
                     command,
                     (
                         titulo,
-                        due_date(data_vencimento),
                         prioridade,
-                        status,
-                        date_today(),
+                        generate_state(data_criacao, data_vencimento),
+                        data_vencimento,
+                        data_criacao
                     ),
                 )
                 self.connection.commit()
@@ -60,10 +60,9 @@ class Crud:
         self,
         id: int,
         titulo: str,
-        data_vencimento: int,
         prioridade: str,
-        status: str,
-    ):
+        prazo: int
+    ) -> dict:
         try:
             self.post_validate(titulo, prioridade, status)
             if self.user_state == EstadoUser.LIBERADO:
@@ -90,7 +89,7 @@ class Crud:
             return {"status": "error", "message": str(e)}
 
     # Atualizar selecionando campo
-    def patch(self, id: int, dado: str | int, novo_dado: str | int):
+    def patch(self, id: int, dado: str | int, novo_dado: str | int) -> dict:
         try:
             if dado not in ["titulo", "data_vencimento", "prioridade", "status"]:
                 raise ValueError("Nome de coluna inválido.")
@@ -114,7 +113,7 @@ class Crud:
             return {"status": "error", "message": str(e)}
 
     # Deletar
-    def delete(self, id: int):
+    def delete(self, id: int) -> dict:
         try:
             command = f"DELETE FROM tarefas WHERE ID = :id"
             cursor = self.connection.cursor()

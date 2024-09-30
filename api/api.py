@@ -12,11 +12,24 @@ crud = Crud()
 class PostTask(BaseModel):
     titulo: str
     prioridade: str
-    status: str
+    prazo: int
 
-class 
+class PutTask(BaseModel):
+    id: int
+    titulo: str
+    prioridade: str
+    prazo: int
 
+class PatchTask(BaseModel):
+    id: int
+    dado: str
+    novo_dado: str
 
+class DeleteTask(BaseModel):
+    id: int
+
+class GetTaskWithId(BaseModel):
+    id: int
 
 # Criando rota principal
 @app.get("/")
@@ -36,25 +49,17 @@ def post_task(data: PostTask):
 
 # Criando rota de atualização de dados
 @app.get("/task/put", methods=["PUT"])
-def put_task():
-    data = request.json
-    id = data.get("id")
-    titulo = data.get("titulo")
-    data_vencimento = data.get("data_vencimento")
-    prioridade = data.get("prioridade")
-    status = data.get("status")
-    data_criacao = data.get("criacao")
-    response = crud.put(id, titulo, data_vencimento, prioridade, status, data_criacao)
+def put_task(data: PutTask):
+    response = crud.put(data.id, data.titulo, data.prioridade, data.prazo)
     if response["status"] == "success":
         return dumps({"message": "Dados atualizado com sucesso"})
     else:
         return dumps({"message": "404"})
 
-
 # Criando rota de atualização de um unico dado
 @app.get("/task/patch", methods=["PATCH"])
-def patch_task(id: int, dado: str, novo_dado: str):
-    response = crud.patch(id, dado, novo_dado)
+def patch_task(data: PatchTask):
+    response = crud.patch(data.id, data.dado, data.novo_dado)
     if response["status"] == "succes":
         return dumps({"message": "Dado atualizados com sucesso"})
     else:
@@ -63,8 +68,8 @@ def patch_task(id: int, dado: str, novo_dado: str):
 
 # Criando rota de removação de dado
 @app.get("/task/delete", metods=["DELETE"])
-def delete_task(id: int):
-    deleted = crud.delete(id)
+def delete_task(data: DeleteTask):
+    deleted = crud.delete(data.id)
     if deleted["status"] == "success":
         return dumps({"message": "Registro deletado com sucesso!"})
     else:
@@ -83,8 +88,8 @@ def get_tasks():
 
 # Criando rota de pegar dado com id
 @app.get("/tasks/get-with-id", methods=["GET"])
-def get_tasks_with_id(id: int):
-    response = crud.get_with_id(id)
+def get_tasks_with_id(data: GetTaskWithId):
+    response = crud.get_with_id(data.id)
     if response["status"] == "succes":
         return dumps({"message": response["message"]})
     else:

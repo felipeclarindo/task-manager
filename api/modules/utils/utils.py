@@ -25,7 +25,6 @@ def due_date(dias: int, update: False, createdAt: str = None) -> str:
     if not update:
         data = date.today()
         data = data + delta
-
         return data.strftime("%Y/%m/%d")
     else:
         data = datetime.strptime(createdAt, "%d/%m/%Y") + delta
