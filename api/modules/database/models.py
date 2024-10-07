@@ -4,7 +4,13 @@ from ..validations.validations import (
     validate_prazo,
     validate_title,
 )
-from ..utils.utils import generate_state, check_user_state, EstadoUser, date_today, due_date
+from ..utils.utils import (
+    check_user_state,
+    EstadoUser,
+    TaskState,
+    date_today,
+    due_date,
+)
 from datetime import date, datetime
 import json
 
@@ -12,13 +18,25 @@ import json
 class Crud:
     def __init__(self) -> None:
         self.connection = connect()
+        command = """CREATE TABLE IF NOT EXISTS tarefas (
+                id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                titulo VARCHAR(255) NOT NULL,
+                prioridade VARCHAR(50) NOT NULL,
+                status VARCHAR(50) NOT NULL,
+                data_vencimento DATE NOT NULL,
+                data_criacao DATE NOT NULL
+                )
+                """
+        cursor = self.connection.cursor()
+        cursor.execute(command)
+        cursor.close()
 
     # Validação de dados antes do envio
     def post_validate(self, titulo: str, prioridade: str, prazo: str) -> None:
         validacoes = [
             validate_title(titulo),
             validate_prioridade(prioridade),
-            validate_prazo(prazo)
+            validate_prazo(prazo),
         ]
         print(validacoes)
         self.user_state = check_user_state(validacoes)
@@ -32,20 +50,19 @@ class Crud:
     ) -> dict:
         try:
             self.post_validate(titulo, prioridade, prazo)
-            print(self.user_state)
             if self.user_state == EstadoUser.LIBERADO:
                 data_criacao = date_today()
-                data_vencimento = due_date(prazo,)
-                command = f"INSERT INTO relatos (titulo, prioridade, status, data_vencimento, data_criacao) VALUES (:titulo, :prioridade, :status, TO_DATE(:data_vencimento, 'YYYY-MM-DD'), TO_DATE(:data_criacao, 'YYYY-MM-DD'))"
+                data_vencimento = due_date(prazo, data_criacao)
+                command = f"INSERT INTO tarefas (titulo, prioridade, status, data_vencimento, data_criacao) VALUES (:titulo, :prioridade, :status, TO_DATE(:data_vencimento, 'YYYY-MM-DD'), TO_DATE(:data_criacao, 'YYYY-MM-DD'))"
                 cursor = self.connection.cursor()
                 cursor.execute(
                     command,
                     {
                         "titulo": titulo,
                         "prioridade": prioridade,
-                        "status": generate_state(data_criacao, data_vencimento),
+                        "status": TaskState.PENDENTE,
                         "data_vencimento": data_vencimento,
-                        "data_criacao": data_criacao
+                        "data_criacao": data_criacao,
                     },
                 )
                 self.connection.commit()
@@ -59,25 +76,20 @@ class Crud:
             return {"status": "error", "message": str(e)}
 
     # Atualizar dados
-    def put(
-        self,
-        id: int,
-        titulo: str,
-        prioridade: str,
-        prazo: str
-    ) -> dict:
+    def put(self, id: int, titulo: str, prioridade: str, prazo: str) -> dict:
         try:
             self.post_validate(titulo, prioridade, prazo)
             if self.user_state == EstadoUser.LIBERADO:
-                command = "UPDATE relatos SET titulo = :titulo, data_vencimento = TO_DATE(:data_vencimento, 'YYYY-MM-DD'), prioridade = :prioridade, status = :status WHERE id = :id"
+
+                command = "UPDATE tarefas SET titulo = :titulo, data_vencimento = TO_DATE(:data_vencimento, 'YYYY-MM-DD'), prioridade = :prioridade, status = :status WHERE id = :id"
                 cursor = self.connection.cursor()
                 cursor.execute(
                     command,
                     {
                         "titulo": titulo,
-                        "data_vencimento": due_date(data_vencimento),
+                        "data_vencimento": due_date(prazo, ""),
                         "prioridade": prioridade,
-                        "status": status,
+                        "status": TaskState.PENDENTE,
                         "id": id,
                     },
                 )
@@ -97,29 +109,24 @@ class Crud:
             if dado not in ["titulo", "data_vencimento", "prioridade", "status"]:
                 raise ValueError("Nome de coluna inválido.")
             if dado == "data_vencimento":
-                command = f"UPDATE relatos SET :dado = TO_DATE(:novo_dado, 'YYYY-MM-DD') WHERE ID = :id"
+                command = f"UPDATE tarefas SET :dado = TO_DATE(:novo_dado, 'YYYY-MM-DD') WHERE ID = :id"
                 cursor = self.connection.cursor()
                 cursor.execute(
-                    command, 
-                    {   
-                        "dado": dado,
-                        "novo_dado": due_date(novo_dado), 
-                        "id": id
-                    }
+                    command, {"dado": dado, "novo_dado": due_date(novo_dado), "id": id}
                 )
                 cursor.close()
                 self.connection.commit()
                 return {"status": "success"}
             else:
-                command = f"UPDATE relatos SET :dado = :novo_dado WHERE ID = :id"
+                command = f"UPDATE tarefas SET :dado = :novo_dado WHERE ID = :id"
                 cursor = self.connection.cursor()
                 cursor.execute(
-                    command, 
-                    {   
+                    command,
+                    {
                         "dado": dado,
-                        "novo_dado": novo_dado, 
+                        "novo_dado": novo_dado,
                         "id": id,
-                    }
+                    },
                 )
                 cursor.close()
                 self.connection.commit()
@@ -163,7 +170,7 @@ class Crud:
     # Obter dados por ID
     def get_with_id(self, id: int):
         try:
-            command = f"SELECT * FROM relatos WHERE ID = :id"
+            command = f"SELECT * FROM tarefas WHERE ID = :id"
             cursor = self.connection.cursor()
             cursor.execute(command, {"id": id})
             tarefa = cursor.fetchone()
