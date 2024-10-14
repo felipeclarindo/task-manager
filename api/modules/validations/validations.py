@@ -41,8 +41,10 @@ def validate_prioridade(prioridade: str) -> bool:
         print(f"Erro: {e}")
     return False
 
-def validate_prazo(prazo: str) -> bool:
+
+def validate_prazo(prazo: int) -> bool:
     try:
+        prazo = str(prazo)
         if prazo:
             prazo = prazo.strip()
             if prazo.isdigit():
@@ -59,7 +61,8 @@ def validate_prazo(prazo: str) -> bool:
     except Exception as e:
         print(f"Erro: {e}")
     return False
-    
+
+
 def validate_status(status: str) -> bool:
     try:
         if status:
