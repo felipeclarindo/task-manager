@@ -2,23 +2,20 @@ from fastapi import FastAPI
 from json import dumps
 from .modules.database.models import Crud
 from pydantic import BaseModel
-
-app = FastAPI()
-
-crud = Crud()
+from fastapi.middleware.cors import CORSMiddleware
 
 
 class PostTask(BaseModel):
     titulo: str
     prioridade: str
-    prazo: str
+    prazo: int
 
 
 class PutTask(BaseModel):
     id: int
     titulo: str
     prioridade: str
-    prazo: str
+    prazo: int
 
 
 class PatchTask(BaseModel):
@@ -27,75 +24,89 @@ class PatchTask(BaseModel):
     novo_dado: str
 
 
-class DeleteTask(BaseModel):
-    id: int
-
-
 class GetTaskWithId(BaseModel):
     id: int
 
 
+app = FastAPI()
+
+crud = Crud()
+
+origins = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # Criando rota principal
-@app.get("/")
+@app.get("/api/")
 def index():
     return {"mensagem": "A api está online."}
 
 
+@app.get("/api/tasks")
+def tasks():
+    return {
+        "mensagem": "Gerenciador de tarefas",
+        "rotas": [
+            "/api/tasks/post",
+            "/api/tasks/put",
+            "/api/tasks/patch",
+            "/api/tasks/delete/<id>",
+            "/api/tasks/get",
+            "/api/tasks/get-with-id/<id>",
+        ],
+    }
+
+
 # Criando rota de envio de dados
-@app.post("/tasks/post", METHODS=["POST"])
+@app.post("/api/tasks/post")
 def post_task(data: PostTask):
     response = crud.post(data.titulo, data.prioridade, data.prazo)
-    if response["status"] == "succes":
-        return dumps({"message": "Dados inseridos no banco de dados com sucesso!"})
-    else:
-        return dumps({"message": response["message"]})
+    return dumps(response)
 
 
 # Criando rota de atualização de dados
-@app.put("/tasks/put", METHODS=["PUT"])
+@app.put("/api/tasks/put")
 def put_task(data: PutTask):
     response = crud.put(data.id, data.titulo, data.prioridade, data.prazo)
-    if response["status"] == "success":
-        return dumps({"message": "Dados atualizado com sucesso"})
-    else:
-        return dumps({"message": response["message"]})
+    return dumps(response)
 
 
 # Criando rota de atualização de um unico dado
-@app.patch("/tasks/patch", METHODS=["PATCH"])
+@app.patch("/api/tasks/patch")
 def patch_task(data: PatchTask):
     response = crud.patch(data.id, data.dado, data.novo_dado)
-    if response["status"] == "succes":
-        return dumps({"message": "Dado atualizados com sucesso"})
-    else:
-        return dumps({"message": response["message"]})
+    return dumps(response)
 
 
 # Criando rota de removação de dado
-@app.delete("/tasks/delete", METHODS=["DELETE"])
-def delete_task(data: DeleteTask):
-    response = crud.delete(data.id)
-    if response["status"] == "success":
-        return dumps({"message": "Registro deletado com sucesso!"})
-    else:
-        return dumps({"message": response["message"]})
+@app.delete("/api/tasks/delete/{id}")
+def delete_task(id: int):
+    response = crud.delete(id)
+    return dumps(response)
 
 
 # Criando rota de pegar dados
-@app.get("/tasks/get", METHODS=["GET"])
-def get_tasks():
-    response = crud.get()
+@app.get("/api/tasks/get-all")
+def get_all_tasks():
+    response = crud.get_all()
     if response["status"] == "success":
-        return dumps({"message": response["message"]})
+        return dumps(response)
     else:
-        return dumps({"message": response["message"]})
+        return dumps(response)
 
 
 # Criando rota de pegar dado com id
-@app.get("/tasks/get-with-id", METHODS=["GET"])
-def get_task_with_id(data: GetTaskWithId):
-    response = crud.get_with_id(data.id)
-    if response["status"] == "succes":
-        return dumps({"message": response["message"]})
-    else:
-        return dumps({"message": response["message"]})
+@app.get("/api/tasks/get-with-id/{id}")
+def get_task_with_id(id: int):
+    response = crud.get_with_id(id)
+    return dumps(response)
