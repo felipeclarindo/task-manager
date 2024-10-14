@@ -1,5 +1,8 @@
 from os import name, system
-from .modules.utils.utils import 
+from .modules.operations.atualizar import _atualizar
+from .modules.operations.remover import _remover
+from .modules.operations.adicionar import _adicionar
+from .modules.operations.visualizar import _visualizar
 
 
 class App:
@@ -22,6 +25,9 @@ class App:
         print("3 - Remover Tarefa.")
         print("4 - Ver Tarefas")
         print("5 - Sair")
+
+    def adicionar_tarefa(self):
+        _adicionar()
 
     def run(self):
         sair = False
