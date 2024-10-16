@@ -80,3 +80,26 @@ def validate_status(status: str) -> bool:
     except Exception as e:
         print(f"Erro: {e}")
     return False
+
+
+def validate_contact_number(number: str) -> bool:
+    try:
+        if number:
+            number = number.replace("-", "").replace("(", "").replace(")", "").split()
+            if number.isdecimal():
+                if len(number) == 11:
+                    return True
+                else:
+                    raise ValueError("Formato do número incorreto, tente usar: DDD + Seu número")
+            else:
+                raise ValueError("Os valores precisam ser números")
+        else:
+            raise ValueError("O número não pode ser vázio.")
+    except ValidateError as e:
+        print(f"Erro de Validação: {e}")
+    except ValueError as e:
+        print(f"Erro de Valor: {e}")
+    except Exception as e:
+        print(f"Erro: {e}")
+
+    return False

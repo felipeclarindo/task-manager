@@ -9,6 +9,7 @@ class PostTask(BaseModel):
     titulo: str
     prioridade: str
     prazo: int
+    contato: str
 
 
 class PutTask(BaseModel):
@@ -16,6 +17,7 @@ class PutTask(BaseModel):
     titulo: str
     prioridade: str
     prazo: int
+    contato: str
 
 
 class PatchTask(BaseModel):
@@ -29,7 +31,6 @@ class GetTaskWithId(BaseModel):
 
 
 app = FastAPI()
-
 crud = Crud()
 
 origins = [
@@ -70,14 +71,14 @@ def tasks():
 # Criando rota de envio de dados
 @app.post("/api/tasks/post")
 def post_task(data: PostTask):
-    response = crud.post(data.titulo, data.prioridade, data.prazo)
+    response = crud.post(data.titulo, data.prioridade, data.prazo, data.contato)
     return dumps(response)
 
 
 # Criando rota de atualização de dados
 @app.put("/api/tasks/put")
 def put_task(data: PutTask):
-    response = crud.put(data.id, data.titulo, data.prioridade, data.prazo)
+    response = crud.put(data.id, data.titulo, data.prioridade, data.prazo, data.contato)
     return dumps(response)
 
 

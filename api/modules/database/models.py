@@ -3,6 +3,7 @@ from ..validations.validations import (
     validate_prioridade,
     validate_prazo,
     validate_title,
+    validate_contact_number
 )
 from ..utils.utils import (
     check_user_state,
@@ -12,6 +13,7 @@ from ..utils.utils import (
     due_date,
     get_data_criacao,
     convert_data,
+    convert_contact_number
 )
 import json
 
@@ -21,24 +23,26 @@ class Crud:
         self.connection = connect()
 
     # Validação de dados antes do envio
-    def post_validate(self, titulo: str, prioridade: str, prazo: int) -> None:
+    def post_validate(self, titulo: str, prioridade: str, prazo: int, numero_contato: str) -> None:
         validacoes = [
             validate_title(titulo),
             validate_prioridade(prioridade),
             validate_prazo(prazo),
+            validate_contact_number(numero_contato)
         ]
         self.user_state = check_user_state(validacoes)
 
     # Inserir dados no banco de dados
-    def post(self, titulo: str, prioridade: str, prazo: int) -> dict:
+    def post(self, titulo: str, prioridade: str, prazo: int, numero_contato: str) -> dict:
         try:
-            self.post_validate(titulo, prioridade, prazo)
+            self.post_validate(titulo, prioridade, prazo, numero_contato)
             if self.user_state == EstadoUser.LIBERADO:
                 data_criacao = date_today()
                 data_vencimento = due_date(prazo, data_criacao)
+                numero_contato = convert_contact_number(numero_contato)
                 command = """
-                    INSERT INTO tarefas (titulo, prioridade, status, data_vencimento, data_criacao)
-                    VALUES (:titulo, :prioridade, :status, TO_DATE(:data_vencimento, 'YYYY-MM-DD'), TO_DATE(:data_criacao, 'YYYY-MM-DD'))
+                    INSERT INTO tarefas (titulo, prioridade, status, data_vencimento, data_criacao, numero_contato)
+                    VALUES (:titulo, :prioridade, :status, TO_DATE(:data_vencimento, 'YYYY-MM-DD'), TO_DATE(:data_criacao, 'YYYY-MM-DD'), :numero_contato)
                 """
                 with self.connection.cursor() as cursor:
                     cursor.execute(
@@ -49,6 +53,7 @@ class Crud:
                             "status": TaskState.PENDENTE,
                             "data_vencimento": data_vencimento,
                             "data_criacao": data_criacao,
+                            "numero_contato": numero_contato
                         },
                     )
                 self.connection.commit()
@@ -64,14 +69,16 @@ class Crud:
             return {"status": "error", "message": str(e)}
 
     # Atualizar dados
-    def put(self, id: int, titulo: str, prioridade: str, prazo: int) -> dict:
+    def put(self, id: int, titulo: str, prioridade: str, prazo: int, numero_contato: str) -> dict:
         try:
-            self.post_validate(titulo, prioridade, prazo)
+            self.post_validate(titulo, prioridade, prazo, numero_contato)
 
             if self.user_state == EstadoUser.LIBERADO:
                 with self.connection.cursor() as cursor:
                     data_criacao = get_data_criacao(cursor, id)
                     data_vencimento = due_date(prazo, data_criacao, True)
+                    numero_contato = convert_contact_number(numero_contato)
+
                     print(data_vencimento)
                     command = """
                         UPDATE tarefas
@@ -79,6 +86,7 @@ class Crud:
                             data_vencimento = TO_DATE(:data_vencimento, 'YYYY-MM-DD'),
                             prioridade = :prioridade,
                             status = :status
+                            numero_contato = :numero_contato
                         WHERE id = :id
                     """
                     cursor.execute(
@@ -89,6 +97,7 @@ class Crud:
                             "prioridade": prioridade,
                             "status": TaskState.PENDENTE,
                             "id": id,
+                            "numero_contato": numero_contato
                         },
                     )
                 self.connection.commit()
@@ -107,7 +116,7 @@ class Crud:
     def patch(self, id: int, dado: str, novo_dado: str) -> dict:
         try:
             dado = dado.lower().strip()
-            if dado not in ["titulo", "prazo", "prioridade", "status"]:
+            if dado not in ["titulo", "prazo", "prioridade", "status", "numero_contato"]:
                 raise ValueError("Nome de coluna inválido.")
 
             print(novo_dado)
