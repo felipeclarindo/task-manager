@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 class PostTask(BaseModel):
     titulo: str
+    descricao: str
     prioridade: str
     prazo: int
     email: str
@@ -12,6 +13,7 @@ class PostTask(BaseModel):
 class PutTask(BaseModel):
     id: int
     titulo: str
+    descricao: str
     prioridade: str
     prazo: int
     email: str
