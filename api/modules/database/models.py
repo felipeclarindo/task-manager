@@ -135,7 +135,8 @@ class Crud:
                     f"Data de Vencimento: {data_vencimento}\n"
                     f"Data de Criação: {data_criacao}\n"
                 )
-                self.notification.send_email(email, subject, message_body)
+                print("Enviando o email")
+                print(self.notification.send_email(email, subject, message_body))
 
                 return {
                     "status": "Success",
@@ -161,7 +162,7 @@ class Crud:
                     command = """
                         UPDATE tarefas
                         SET titulo = :titulo,
-                            descricao = :descricao
+                            descricao = :descricao,
                             data_vencimento = TO_DATE(:data_vencimento, 'YYYY-MM-DD'),
                             prioridade = :prioridade,
                             status = :status,
