@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 class PostTask(BaseModel):
     titulo: str
+    descricao: str
     prioridade: str
     prazo: int
     email: str
@@ -12,6 +13,7 @@ class PostTask(BaseModel):
 class PutTask(BaseModel):
     id: int
     titulo: str
+    descricao: str
     prioridade: str
     prazo: int
     email: str
@@ -57,13 +59,13 @@ async def get_task_with_id(id: int):
 # Criando rota de envio de dados
 @app.post("/api/tasks")
 async def post_task(data: PostTask):
-    response = crud.post(data.titulo, data.prioridade, data.prazo, data.email)
+    response = crud.post(data.titulo, data.descricao, data.prioridade, data.prazo, data.email)
     return response
 
 # Criando rota de atualização de dados
 @app.put("/api/tasks")
 async def put_task(data: PutTask):
-    response = crud.put(data.id, data.titulo, data.prioridade, data.prazo, data.email)
+    response = crud.put(data.id, data.titulo, data.descricao, data.prioridade, data.prazo, data.email)
     return response
 
 # Criando rota de atualização de um único dado

@@ -110,6 +110,7 @@ def validate_desc(descricao: str) -> bool:
         if not descricao:
             raise ValueError("A descrição não pode ser vázia")
         
+        descricao = descricao.strip()
         if descricao.isalnum():
             return True
         

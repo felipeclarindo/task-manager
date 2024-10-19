@@ -40,7 +40,7 @@ class Crud:
                     for tarefa in tarefas:
                         tarefa_dict = {}
                         for i, dado in enumerate(tarefa):
-                            if i in [4, 5]:
+                            if i in [5, 6]:
                                 tarefa_dict[columns[i]] = convert_data(str(dado))
                             else:
                                 tarefa_dict[columns[i]] = dado
@@ -70,7 +70,7 @@ class Crud:
                 if tarefa:
                     tarefa_dict = {}
                     for i, dado in enumerate(tarefa):
-                        if i in [4, 5]:
+                        if i in [5, 6]:
                             tarefa_dict[columns[i]] = convert_data(str(dado))
                         else:
                             tarefa_dict[columns[i]] = dado

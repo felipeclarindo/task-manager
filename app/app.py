@@ -113,15 +113,15 @@ import json
 #     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}")
 
 def visualizar():
-    url = " http://127.0.0.1:8000/api/tasks/get-all"
+    url = " http://127.0.0.1:8000/api/tasks/"
     response = requests.get(url)
     response.raise_for_status()
     data = response.json()
-    dict_data = json.loads(data)
-    return json.loads(dict_data['response'])
+    return json.loads(data['response'])
+    
 
 def vizualizar_tarefa(id):
-    url = f" http://127.0.0.1:8000/api/tasks/get-with-id/{id}"
+    url = f" http://127.0.0.1:8000/api/tasks/{id}"
     response = requests.get(url)
     response.raise_for_status()
     data = response.json()
@@ -129,7 +129,7 @@ def vizualizar_tarefa(id):
     return json.loads(dict_data['response'])
 
 def apagar(id):
-    url = f" http://127.0.0.1:8000/api/tasks/get-with-id/{id}"
+    url = f" http://127.0.0.1:8000/api/tasks/{id}"
     response = requests.delete(url)
     response.raise_for_status()
     resposta = json.loads(response.json())["message"]
@@ -150,26 +150,29 @@ def nova_tarefa():
 def ifos_tarefa(id):
     tarefa = vizualizar_tarefa(id)
     st.write(f"Titulo: {tarefa["TITULO"]}")
+    st.write(f"Descrição: {tarefa["DESCRICAO"]}")
     st.write(f"Prioridade: {tarefa["PRIORIDADE"]}")
     st.write(f"Status: {tarefa["STATUS"]}")
     st.write(f"Data De Criação: {tarefa["DATA_CRIACAO"]}")
     st.write(f"Data Prazo: {tarefa["DATA_VENCIMENTO"]}")
+    st.write(f"Email: {tarefa["EMAIL"]}")
     
 
 lista_tarefas = visualizar()
 lista_pendentes = []
-lista_em_andamento = []
+lista_em_progresso = []
 lista_concluidas = []
 key_counter = 0
 id = 0
 
 for tarefa in lista_tarefas:
-    if tarefa['STATUS'] == 'pendente':
-        lista_pendentes.append(tarefa)
-    if tarefa['STATUS'] == 'Em Andamento':
-        lista_em_andamento.append(tarefa)
-    if tarefa['STATUS'] == 'concluido':
-        lista_concluidas.append(tarefa)
+    # if tarefa['STATUS'] == 'pendente':
+    #     lista_pendentes.append(tarefa)
+    # if tarefa['STATUS'] == 'em progresso':
+    #     lista_em_progresso.append(tarefa)
+    # if tarefa['STATUS'] == 'concluido':
+    #     lista_concluidas.append(tarefa)
+    print(lista_tarefas)
 
 with st.sidebar:
     st.image("./static/Img-Logo.png", width=300)
@@ -198,7 +201,7 @@ with st.sidebar:
         
     with tab2:
         st.header("Tarefas Em Progresso:")
-        for tarefa in lista_em_andamento:
+        for tarefa in lista_em_progresso:
             id = tarefa["ID"]
             with st.expander(tarefa["TITULO"]):
                 key_counter += 1
