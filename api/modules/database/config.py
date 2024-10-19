@@ -58,9 +58,3 @@ def create_table_if_not_exists(connection):
         print(f"Erro ao criar a tabela: {e}")
     finally:
         cursor.close()
-
-# Conectar e criar a tabela
-connection = connect()
-if connection:
-    create_table_if_not_exists(connection)
-    connection.close()

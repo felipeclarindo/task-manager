@@ -1,4 +1,5 @@
-from .config import connect
+from .config import connect, create_table_if_not_exists
+from ..notification.notification import Notificador
 from ..validations.validations import (
     validate_prioridade,
     validate_prazo,
@@ -19,6 +20,11 @@ from ..utils.utils import (
 class Crud:
     def __init__(self) -> None:
         self.connection = connect()
+        self.notification = Notificador()
+
+        # Conectar e criar a tabela se não existir
+        if self.connection:
+            create_table_if_not_exists(self.connection)
 
     # Pegando todos os dados
     def get_all(self):
@@ -118,6 +124,19 @@ class Crud:
                         },
                     )
                 self.connection.commit()
+
+                # Enviar notificação por e-mail
+                subject = f"Tarefa Adicionada: {titulo}"
+                message_body = (
+                    f"Uma nova tarefa foi adicionada:\n"
+                    f"Título: {titulo}\n"
+                    f"Descrição: {descricao}\n"
+                    f"Prioridade: {prioridade}\n"
+                    f"Data de Vencimento: {data_vencimento}\n"
+                    f"Data de Criação: {data_criacao}\n"
+                )
+                self.notification.send_email(email, subject, message_body)
+
                 return {
                     "status": "Success",
                     "message": "Tarefa adicionada com sucesso.",
@@ -162,6 +181,19 @@ class Crud:
                         },
                     )
                 self.connection.commit()
+
+                # Enviar notificação por e-mail
+                subject = f"Tarefa Adicionada: {titulo}"
+                message_body = (
+                    f"Uma nova tarefa foi atualizada:\n"
+                    f"Título: {titulo}\n"
+                    f"Descrição: {descricao}\n"
+                    f"Prioridade: {prioridade}\n"
+                    f"Data de Vencimento: {data_vencimento}\n"
+                    f"Data de Criação: {data_criacao}\n"
+                )
+                self.notification.send_email(email, subject, message_body)
+
                 return {
                     "status": "Success",
                     "message": "Tarefa atualizada com sucesso.",
@@ -180,9 +212,19 @@ class Crud:
             if dado not in ["titulo", "descricao", "prazo", "prioridade", "status", "email"]:
                 raise ValueError("Nome de coluna inválido.")
 
+            # Obter os dados atuais da tarefa
+            with self.connection.cursor() as cursor:
+                command = "SELECT * FROM tarefas WHERE ID = :id"
+                cursor.execute(command, {"id": id})
+                tarefa_atual = cursor.fetchone()
+                
+                if not tarefa_atual:
+                    raise Exception(f"Tarefa com id {id} não encontrada.")
+                columns = [column[0] for column in cursor.description]
+                tarefa_dict = {columns[i]: tarefa_atual[i] for i in range(len(columns))}
+
             if dado == "prazo":
-                with self.connection.cursor() as cursor:
-                    data_criacao = get_data_criacao(cursor, id)
+                data_criacao = tarefa_dict["data_criacao"]  # Supondo que "data_criacao" seja a coluna correta
                 novo_dado = due_date(int(novo_dado), data_criacao, True)
                 command = f"UPDATE tarefas SET data_vencimento = TO_DATE(:novo_dado, 'YYYY-MM-DD') WHERE ID = :id"
             else:
@@ -197,25 +239,59 @@ class Crud:
                     },
                 )
             self.connection.commit()
+
+            # Enviar notificação por e-mail
+            subject = f"Tarefa Atualizada: {tarefa_dict['titulo']}"
+            message_body = (
+                f"A tarefa foi atualizada:\n"
+                f"Título: {tarefa_dict['titulo']}\n"
+                f"Descrição: {tarefa_dict['descricao']}\n"
+                f"Prioridade: {tarefa_dict['prioridade']}\n"
+                f"Data de Vencimento: {tarefa_dict['data_vencimento']}\n"
+                f"Data de Criação: {tarefa_dict['data_criacao']}\n"
+            )
+            self.notification.send_email(tarefa_dict['email'], subject, message_body)
+
             return {"status": "Success", "message": "Tarefa atualizada com sucesso."}
         except ValueError as e:
             return {"status": "ValueError", "message": str(e)}
         except Exception as e:
             return {"status": "Error", "message": str(e)}
 
+
     # Deletar
     def delete(self, id: int) -> dict:
         try:
+            # Obter os dados da tarefa antes de deletar
+            command = "SELECT * FROM tarefas WHERE ID = :id"
+            with self.connection.cursor() as cursor:
+                cursor.execute(command, {"id": id})
+                tarefa = cursor.fetchone()
+                if not tarefa:
+                    raise Exception(f"Tarefa com id {id} não encontrada.")
+                columns = [column[0] for column in cursor.description]
+                tarefa_dict = {columns[i]: tarefa[i] for i in range(len(columns))}
+
             command = "DELETE FROM tarefas WHERE ID = :id"
             with self.connection.cursor() as cursor:
                 cursor.execute(command, {"id": id})
             self.connection.commit()
+
+            # Enviar notificação por e-mail
+            subject = f"Tarefa Deletada: {tarefa_dict['titulo']}"
+            message_body = (
+                f"A tarefa foi deletada:\n"
+                f"Título: {tarefa_dict['titulo']}\n"
+                f"Descrição: {tarefa_dict['descricao']}\n"
+                f"Prioridade: {tarefa_dict['prioridade']}\n"
+                f"Data de Vencimento: {tarefa_dict['data_vencimento']}\n"
+                f"Data de Criação: {tarefa_dict['data_criacao']}\n"
+            )
+            self.notification.send_email(tarefa_dict['email'], subject, message_body)
+
             return {"status": "Success", "message": "Tarefa deletada com sucesso."}
         except ValueError as e:
             return {"status": "ValueError", "message": str(e)}
         except Exception as e:
             return {"status": "Error", "message": str(e)}
 
-    # Finalizando a conexão quando a instância é excluída
-    def __del__(self):
-        self.connection.close()
