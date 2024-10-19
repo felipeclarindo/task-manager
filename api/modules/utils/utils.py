@@ -55,8 +55,3 @@ def convert_data(data: str) -> str:
     print("convert_data")
     data = datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
     return data.strftime("%d/%m/%Y")
-
-
-def convert_contact_number(number: str) -> str:
-    number = number.replace("-", "").replace("(", "").replace(")", "").replace("+", "").split()
-    return "+55" + number

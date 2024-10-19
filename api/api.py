@@ -1,34 +1,25 @@
 from fastapi import FastAPI
-from json import dumps
 from .modules.database.models import Crud
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-
 
 class PostTask(BaseModel):
     titulo: str
     prioridade: str
     prazo: int
-    numero_contato: str
-
+    email: str
 
 class PutTask(BaseModel):
     id: int
     titulo: str
     prioridade: str
     prazo: int
-    numero_contato: str
-
+    email: str
 
 class PatchTask(BaseModel):
     id: int
     dado: str
     novo_dado: str
-
-
-class GetTaskWithId(BaseModel):
-    id: int
-
 
 app = FastAPI()
 crud = Crud()
@@ -46,68 +37,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # Criando rota principal
-@app.get("/api/")
-def index():
-    return {"mensagem": "A api está online."}
-
-
-@app.get("/api/tasks")
-def tasks():
-    return {
-        "mensagem": "Gerenciador de tarefas",
-        "rotas": [
-            "/api/tasks/post",
-            "/api/tasks/put",
-            "/api/tasks/patch",
-            "/api/tasks/delete/<id>",
-            "/api/tasks/get",
-            "/api/tasks/get-with-id/<id>",
-        ],
-    }
-
-
-# Criando rota de envio de dados
-@app.post("/api/tasks/post")
-def post_task(data: PostTask):
-    response = crud.post(data.titulo, data.prioridade, data.prazo, data.numero_contato)
-    return dumps(response)
-
-
-# Criando rota de atualização de dados
-@app.put("/api/tasks/put")
-def put_task(data: PutTask):
-    response = crud.put(data.id, data.titulo, data.prioridade, data.prazo, data.numero_contato)
-    return dumps(response)
-
-
-# Criando rota de atualização de um unico dado
-@app.patch("/api/tasks/patch")
-def patch_task(data: PatchTask):
-    response = crud.patch(data.id, data.dado, data.novo_dado)
-    return dumps(response)
-
-
-# Criando rota de removação de dado
-@app.delete("/api/tasks/delete/{id}")
-def delete_task(id: int):
-    response = crud.delete(id)
-    return dumps(response)
-
+@app.get("/api")
+async def index():
+    return {"mensagem": "O Gerenciador de tarefas está online."}
 
 # Criando rota de pegar dados
-@app.get("/api/tasks/get-all")
-def get_all_tasks():
+@app.get("/api/tasks")
+async def get_all_tasks():
     response = crud.get_all()
-    if response["status"] == "success":
-        return dumps(response)
-    else:
-        return dumps(response)
-
+    return response
 
 # Criando rota de pegar dado com id
-@app.get("/api/tasks/get-with-id/{id}")
-def get_task_with_id(id: int):
+@app.get("/api/tasks/{id}")
+async def get_task_with_id(id: int):
     response = crud.get_with_id(id)
-    return dumps(response)
+    return response
+
+# Criando rota de envio de dados
+@app.post("/api/tasks")
+async def post_task(data: PostTask):
+    response = crud.post(data.titulo, data.prioridade, data.prazo, data.email)
+    return response
+
+# Criando rota de atualização de dados
+@app.put("/api/tasks")
+async def put_task(data: PutTask):
+    response = crud.put(data.id, data.titulo, data.prioridade, data.prazo, data.email)
+    return response
+
+# Criando rota de atualização de um único dado
+@app.patch("/api/tasks")
+async def patch_task(data: PatchTask):
+    response = crud.patch(data.id, data.dado, data.novo_dado)
+    return response
+
+# Criando rota de remoção de dado
+@app.delete("/api/tasks/{id}")
+async def delete_task(id: int):
+    response = crud.delete(id)
+    return response
