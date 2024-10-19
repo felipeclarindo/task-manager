@@ -3,7 +3,8 @@ from ..validations.validations import (
     validate_prioridade,
     validate_prazo,
     validate_title,
-    validate_contact_number
+    validate_email,
+    validate_desc
 )
 from ..utils.utils import (
     check_user_state,
@@ -13,47 +14,107 @@ from ..utils.utils import (
     due_date,
     get_data_criacao,
     convert_data,
-    convert_contact_number
 )
-import json
-
 
 class Crud:
     def __init__(self) -> None:
         self.connection = connect()
 
+    # Pegando todos os dados
+    def get_all(self):
+        try:
+            command = "SELECT * FROM tarefas ORDER BY ID"
+            with self.connection.cursor() as cursor:
+                cursor.execute(command)
+                tarefas = cursor.fetchall()
+                columns = [column[0] for column in cursor.description]
+
+                if tarefas:
+                    tarefas_modificadas = []
+                    for tarefa in tarefas:
+                        tarefa_dict = {}
+                        for i, dado in enumerate(tarefa):
+                            if i in [4, 5]:
+                                tarefa_dict[columns[i]] = convert_data(str(dado))
+                            else:
+                                tarefa_dict[columns[i]] = dado
+                        tarefas_modificadas.append(tarefa_dict)
+
+                    return {
+                        "status": "Success",
+                        "message": "Tarefas encontradas com sucesso.",
+                        "response": tarefas_modificadas,
+                    }
+
+                return {"status": "Success", "message": "Nenhuma tarefa encontrada."}
+        except ValueError as e:
+            return {"status": "ValueError", "message": str(e)}
+        except Exception as e:
+            return {"status": "Error", "message": str(e)}
+        
+    # Obtendo dados por ID
+    def get_with_id(self, id: int):
+        try:
+            command = "SELECT * FROM tarefas WHERE ID = :id"
+            with self.connection.cursor() as cursor:
+                cursor.execute(command, {"id": id})
+                tarefa = cursor.fetchone()
+                columns = [column[0] for column in cursor.description]
+
+                if tarefa:
+                    tarefa_dict = {}
+                    for i, dado in enumerate(tarefa):
+                        if i in [4, 5]:
+                            tarefa_dict[columns[i]] = convert_data(str(dado))
+                        else:
+                            tarefa_dict[columns[i]] = dado
+
+                    return {
+                        "status": "Success",
+                        "message": "Tarefa encontrada com sucesso",
+                        "response": tarefa_dict
+                    }
+                raise Exception(f"Tarefa com id {id} não encontrada.")
+        except ValueError as e:
+            return {"status": "ValueError", "message": str(e)}
+        except Exception as e:
+            return {"status": "Error", "message": str(e)}
+        
     # Validação de dados antes do envio
-    def post_validate(self, titulo: str, prioridade: str, prazo: int, numero_contato: str) -> None:
+    def post_validate(self, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> None:
         validacoes = [
             validate_title(titulo),
+            validate_desc(descricao),    
             validate_prioridade(prioridade),
             validate_prazo(prazo),
-            validate_contact_number(numero_contato)
+            validate_email(email),
         ]
         self.user_state = check_user_state(validacoes)
 
-    # Inserir dados no banco de dados
-    def post(self, titulo: str, prioridade: str, prazo: int, numero_contato: str) -> dict:
+    # Inserir dados
+    def post(self, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> dict:
         try:
-            self.post_validate(titulo, prioridade, prazo, numero_contato)
+            self.post_validate(titulo, descricao, prioridade, prazo, email)
+
             if self.user_state == EstadoUser.LIBERADO:
                 data_criacao = date_today()
                 data_vencimento = due_date(prazo, data_criacao)
-                numero_contato = convert_contact_number(numero_contato)
+
                 command = """
-                    INSERT INTO tarefas (titulo, prioridade, status, data_vencimento, data_criacao, numero_contato)
-                    VALUES (:titulo, :prioridade, :status, TO_DATE(:data_vencimento, 'YYYY-MM-DD'), TO_DATE(:data_criacao, 'YYYY-MM-DD'), :numero_contato)
+                    INSERT INTO tarefas (titulo, descricao, prioridade, status, data_vencimento, data_criacao, email)
+                    VALUES (:titulo, :descricao, :prioridade, :status, TO_DATE(:data_vencimento, 'YYYY-MM-DD'), TO_DATE(:data_criacao, 'YYYY-MM-DD'), :email)
                 """
                 with self.connection.cursor() as cursor:
                     cursor.execute(
                         command,
                         {
                             "titulo": titulo,
+                            "descricao": descricao,
                             "prioridade": prioridade,
                             "status": TaskState.PENDENTE,
                             "data_vencimento": data_vencimento,
                             "data_criacao": data_criacao,
-                            "numero_contato": numero_contato
+                            "email": email
                         },
                     )
                 self.connection.commit()
@@ -69,35 +130,35 @@ class Crud:
             return {"status": "error", "message": str(e)}
 
     # Atualizar dados
-    def put(self, id: int, titulo: str, prioridade: str, prazo: int, numero_contato: str) -> dict:
+    def put(self, id: int, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> dict:
         try:
-            self.post_validate(titulo, prioridade, prazo, numero_contato)
+            self.post_validate(titulo, descricao, prioridade, prazo, email)
 
             if self.user_state == EstadoUser.LIBERADO:
                 with self.connection.cursor() as cursor:
                     data_criacao = get_data_criacao(cursor, id)
                     data_vencimento = due_date(prazo, data_criacao, True)
-                    numero_contato = convert_contact_number(numero_contato)
 
-                    print(data_vencimento)
                     command = """
                         UPDATE tarefas
                         SET titulo = :titulo,
+                            descricao = :descricao
                             data_vencimento = TO_DATE(:data_vencimento, 'YYYY-MM-DD'),
                             prioridade = :prioridade,
-                            status = :status
-                            numero_contato = :numero_contato
+                            status = :status,
+                            email = :email
                         WHERE id = :id
                     """
                     cursor.execute(
                         command,
                         {
                             "titulo": titulo,
+                            "descricao": descricao,
                             "data_vencimento": data_vencimento,
                             "prioridade": prioridade,
                             "status": TaskState.PENDENTE,
                             "id": id,
-                            "numero_contato": numero_contato
+                            "email": email
                         },
                     )
                 self.connection.commit()
@@ -116,16 +177,13 @@ class Crud:
     def patch(self, id: int, dado: str, novo_dado: str) -> dict:
         try:
             dado = dado.lower().strip()
-            if dado not in ["titulo", "prazo", "prioridade", "status", "numero_contato"]:
+            if dado not in ["titulo", "descricao", "prazo", "prioridade", "status", "email"]:
                 raise ValueError("Nome de coluna inválido.")
 
-            print(novo_dado)
             if dado == "prazo":
-                cursor = self.connection.cursor()
-                data_criacao = get_data_criacao(cursor, id)
-                cursor.close()  
+                with self.connection.cursor() as cursor:
+                    data_criacao = get_data_criacao(cursor, id)
                 novo_dado = due_date(int(novo_dado), data_criacao, True)
-
                 command = f"UPDATE tarefas SET data_vencimento = TO_DATE(:novo_dado, 'YYYY-MM-DD') WHERE ID = :id"
             else:
                 command = f"UPDATE tarefas SET {dado} = :novo_dado WHERE ID = :id"
@@ -153,68 +211,6 @@ class Crud:
                 cursor.execute(command, {"id": id})
             self.connection.commit()
             return {"status": "Success", "message": "Tarefa deletada com sucesso."}
-        except ValueError as e:
-            return {"status": "ValueError", "message": str(e)}
-        except Exception as e:
-            return {"status": "Error", "message": str(e)}
-
-    # Obter todos os dados
-    import json
-
-    def get_all(self):
-        try:
-            command = "SELECT * FROM tarefas ORDER BY ID"
-            with self.connection.cursor() as cursor:
-                cursor.execute(command)
-                tarefas = cursor.fetchall()
-                columns = [column[0] for column in cursor.description]
-
-                if tarefas:
-                    tarefas_modificadas = []
-                    for tarefa in tarefas:
-                        tarefa_dict = {}
-                        for i, dado in enumerate(tarefa):
-                            if i in [4, 5]:
-                                tarefa_dict[columns[i]] = convert_data(str(dado))
-                            else:
-                                tarefa_dict[columns[i]] = dado
-                        tarefas_modificadas.append(tarefa_dict)
-
-                    return {
-                        "status": "Success",
-                        "message": "Tarefas encontradas com sucesso.",
-                        "response": json.dumps(tarefas_modificadas),
-                    }
-
-                return {"status": "Success", "message": "Nenhuma tarefa encontrada."}
-        except ValueError as e:
-            return {"status": "ValueError", "message": str(e)}
-        except Exception as e:
-            return {"status": "Error", "message": str(e)}
-
-    # Obter dados por ID
-    def get_with_id(self, id: int):
-        try:
-            command = "SELECT * FROM tarefas WHERE ID = :id"
-            with self.connection.cursor() as cursor:
-                cursor.execute(command, {"id": id})
-                tarefa = cursor.fetchone()
-                columns = [column[0] for column in cursor.description]
-
-                if tarefa:
-                    tarefa_dict = {}
-                    for i, dado in enumerate(tarefa):
-                        if i in [4, 5]:
-                            tarefa_dict[columns[i]] = convert_data(str(dado))
-                        else:
-                            tarefa_dict[columns[i]] = dado
-
-                    return {
-                        "status": "Success",
-                        "message": "Tarefa encontrada com sucesso",
-                        "response": json.dumps(tarefa_dict),
-                    }
-                raise Exception(f"Tarefa com id {id} não encontrada.")
         except ValueError as e:
             return {"status": "ValueError", "message": str(e)}
         except Exception as e:
