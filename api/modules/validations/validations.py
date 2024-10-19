@@ -8,14 +8,14 @@ def validate_title(title: str) -> bool:
     try:
         if title:
             title = title.strip().lower()
-            if title.isalnum():
+            if all(c.isalnum() or c.isspace() for c in title):
                 return True
             else:
                 raise ValidateError(
-                    "Titulo invalido, não é aceito caracteres especiais"
+                    "Título inválido, não é aceito caracteres especiais"
                 )
         else:
-            raise ValueError("O titulo não pode ser vazio.")
+            raise ValueError("O título não pode ser vazio.")
     except ValidateError as e:
         print(f"Erro de Validação: {e}")
     except ValueError as e:
@@ -23,6 +23,7 @@ def validate_title(title: str) -> bool:
     except Exception as e:
         print(f"Erro {e}")
     return False
+
 
 
 def validate_prioridade(prioridade: str) -> bool:
