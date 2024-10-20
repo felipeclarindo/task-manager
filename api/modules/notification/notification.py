@@ -1,28 +1,32 @@
 import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import os
 
 class Notificador:
-
     def __init__(self):
-        self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')  
-        self.smtp_port = os.getenv('SMTP_PORT', 587)
-        self.email = os.getenv('EMAIL')
-        self.password = os.getenv('EMAIL_PASSWORD')
+        self.email_user = os.getenv("EMAIL")
+        self.email_pass = os.getenv("EMAIL_PASSWORD")
 
-    def send_email(self, to_email: str, subject: str, message_body: str) -> dict:
+    def send_email(self, to_email: str, subject: str, message_body: str) -> None:
         try:
-            text = f"Subject: {subject}\n\n{message_body}"
+            # Criação da mensagem
+            msg = MIMEMultipart()
+            msg['From'] = self.email_user
+            msg['To'] = to_email
+            msg['Subject'] = subject
 
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.starttls()  # Segurança
+            # Adicionando o corpo da mensagem
+            msg.attach(MIMEText(message_body, 'plain', 'utf-8'))
 
-                # Login no servidor SMTP
-                server.login(self.email, self.password)
-
-                # Envio do e-mail
-                server.sendmail(self.email, to_email, text)
+            # Configuração do servidor SMTP
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls() 
+            server.login(self.email_user, self.email_pass) 
+            server.sendmail(msg['From'], to_email, msg.as_string())
 
             print("Email enviado com sucesso!")
         except Exception as e:
             print(f"Erro: {str(e)}")
-
+        finally:
+            server.quit()  # Fechar conexão
