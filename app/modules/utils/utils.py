@@ -40,20 +40,20 @@ def criar_tarefa(data:json) -> dict:
     response.raise_for_status()
     return response.json()
 
-def dicionario_tarefa_prioridade(lista_tarefas: list[dict]) -> list(dict):
-    lista_ordenada = []
-    for tarefa in lista_tarefas:
-        point_counter = 0
-        if tarefa['STATUS'] == 'alta':
-            point_counter += 2
-        elif tarefa['STATUS'] == 'media':
-            point_counter += 1
-        else:
-            point_counter += 0
-        if tarefa['PRIORIDADE'] == 'em progresso':
-            point_counter += 2
-        elif tarefa['PRIORIDADE'] == 'pendente':
-            point_counter += 1
-        else:
-            point_counter += 0
+# def dicionario_tarefa_prioridade(lista_tarefas: list[dict]) -> list(dict):
+#     lista_ordenada = []
+#     for tarefa in lista_tarefas:
+#         point_counter = 0
+#         if tarefa['STATUS'] == 'alta':
+#             point_counter += 2
+#         elif tarefa['STATUS'] == 'media':
+#             point_counter += 1
+#         else:
+#             point_counter += 0
+#         if tarefa['PRIORIDADE'] == 'em progresso':
+#             point_counter += 2
+#         elif tarefa['PRIORIDADE'] == 'pendente':
+#             point_counter += 1
+#         else:
+#             point_counter += 0
         
