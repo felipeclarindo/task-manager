@@ -26,6 +26,17 @@ class Crud:
         if self.connection:
             create_table_if_not_exists(self.connection)
 
+    # Validação de dados
+    def validate_fields(self, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> None:
+        validacoes = [
+            validate_title(titulo),
+            validate_desc(descricao),    
+            validate_prioridade(prioridade),
+            validate_prazo(prazo),
+            validate_email(email),
+        ]
+        self.user_state = check_user_state(validacoes)
+
     # Pegando todos os dados
     def get_all(self):
         try:
@@ -84,23 +95,12 @@ class Crud:
         except ValueError as e:
             return {"status": "ValueError", "message": str(e)}
         except Exception as e:
-            return {"status": "Error", "message": str(e)}
-        
-    # Validação de dados antes do envio
-    def post_validate(self, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> None:
-        validacoes = [
-            validate_title(titulo),
-            validate_desc(descricao),    
-            validate_prioridade(prioridade),
-            validate_prazo(prazo),
-            validate_email(email),
-        ]
-        self.user_state = check_user_state(validacoes)
+            return {"status": "Error", "message": str(e)}   
 
     # Inserir dados
     def post(self, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> dict:
         try:
-            self.post_validate(titulo, descricao, prioridade, prazo, email)
+            self.validate_fields(titulo, descricao, prioridade, prazo, email)
 
             if self.user_state == EstadoUser.LIBERADO:
                 data_criacao = date_today()
@@ -128,11 +128,11 @@ class Crud:
                 # Enviar notificação por e-mail
                 subject = f"Tarefa Criada: {titulo}"
                 message_body = (
-                    f"Uma nova tarefa foi adicionada:\n"
-                    f"Título: {titulo}\n"
-                    f"Descrição: {descricao}\n"
-                    f"Prioridade: {prioridade}\n"
-                    f"Prazo de: {prazo} dias\n"
+                    f"Uma nova tarefa foi adicionada:\n\n"
+                    f"Título: {titulo};\n"
+                    f"Descrição: {descricao};\n"
+                    f"Prioridade: {prioridade};\n"
+                    f"Prazo de: {prazo} dias;\n"
                 )
                 print("Enviando o email")
                 self.notification.send_email(email, subject, message_body)
@@ -149,15 +149,20 @@ class Crud:
             return {"status": "error", "message": str(e)}
 
     # Atualizar dados
-    ## TO DO
-    def put(self, id: int,titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> dict:
+    def put(self, id: int, titulo: str, descricao: str, prioridade: str, prazo: int, email: str, status: str = None) -> dict:
         try:
-            self.post_validate(titulo, descricao, prioridade, prazo, email)
+            self.validate_fields(titulo, descricao, prioridade, prazo, email)
 
             if self.user_state == EstadoUser.LIBERADO:
                 with self.connection.cursor() as cursor:
                     data_criacao = get_data_criacao(cursor, id)
                     data_vencimento = due_date(prazo, data_criacao, True)
+
+                    # Verificar e validar o status recebido
+                    if status is None:
+                        status = TaskState.PENDENTE
+                    elif status not in TaskState.__members__:
+                        return {"status": "Error", "message": "Status inválido."}
 
                     command = """
                         UPDATE tarefas
@@ -176,25 +181,22 @@ class Crud:
                             "descricao": descricao,
                             "data_vencimento": data_vencimento,
                             "prioridade": prioridade,
-                            "status": TaskState.PENDENTE,
+                            "status": status,  # Atualizar com o status informado ou PENDENTE por padrão
                             "id": id,
                             "email": email
                         },
                     )
                 self.connection.commit()
 
-                data_vencimento = convert_data(str(data_vencimento))
-                data_criacao = convert_data(str(data_criacao))
-
                 # Enviar notificação por e-mail
                 subject = f"Tarefa Atualizada: {titulo}"
                 message_body = (
-                    f"Uma nova tarefa foi atualizada:\n"
-                    f"Título: {titulo}\n"
-                    f"Descrição: {descricao}\n"
-                    f"Prioridade: {prioridade}\n"
-                    f"Data de Vencimento: {data_vencimento}\n"
-                    f"Data de Criação: {data_criacao}\n"
+                    f"Uma nova tarefa foi atualizada:\n\n"
+                    f"Título: {titulo};\n"
+                    f"Descrição: {descricao};\n"
+                    f"Prioridade: {prioridade};\n"
+                    f"Prazo de: {prazo} dias;\n"
+                    f"Status: {status};\n"
                 )
                 self.notification.send_email(email, subject, message_body)
 
@@ -209,47 +211,34 @@ class Crud:
         except Exception as e:
             return {"status": "Error", "message": str(e)}
 
-    # Atualizar um unico dado
-    def patch(self, id: int, dado: str, novo_dado: str) -> dict:
-        try:
-            dado = dado.lower().strip()
-            if dado not in ["titulo", "descricao", "prazo", "prioridade", "status", "email"]:
-                raise ValueError("Nome de coluna inválido.")
-
-            print(novo_dado)
-            if dado == "prazo":
-                cursor = self.connection.cursor()
-                data_criacao = get_data_criacao(cursor, id)
-                cursor.close()  
-                novo_dado = due_date(int(novo_dado), data_criacao, True)
-
-                command = f"UPDATE tarefas SET data_vencimento = TO_DATE(:novo_dado, 'YYYY-MM-DD') WHERE ID = :id"
-            else:
-                command = f"UPDATE tarefas SET {dado} = :novo_dado WHERE ID = :id"
-
-            with self.connection.cursor() as cursor:
-                cursor.execute(
-                    command,
-                    {
-                        "novo_dado": novo_dado,
-                        "id": id,
-                    },
-                )
-            self.connection.commit()
-            return {"status": "Success", "message": "Tarefa atualizada com sucesso."}
-        except ValueError as e:
-            return {"status": "ValueError", "message": str(e)}
-        except Exception as e:
-            return {"status": "Error", "message": str(e)}
-
-
     # Deletar
     def delete(self, id: int) -> dict:
         try:
-            command = "DELETE FROM tarefas WHERE ID = :id"
+            select_email = "SELECT email FROM tarefas WHERE ID = :id"
+            delete_command = "DELETE FROM tarefas WHERE ID = :id"
+            
             with self.connection.cursor() as cursor:
-                cursor.execute(command, {"id": id})
+                # Executa o comando SELECT para obter o email
+                cursor.execute(select_email, {"id": id})
+                result = cursor.fetchone() 
+
+                # Se a tarefa não for encontrada
+                if not result:
+                    print("Email não encontrado!")
+
+                email = result[0]  # Pega o email do resultado
+
+                # Executa o comando DELETE para excluir a tarefa
+                cursor.execute(delete_command, {"id": id})
+            
             self.connection.commit()
+
+            # Enviar notificação por e-mail
+            subject = "Tarefa Deletada"
+            message_body = f"A sua tarefa com id: {id} foi apagada com sucesso!\n"
+
+            self.notification.send_email(email, subject, message_body)
+            
             return {"status": "Success", "message": "Tarefa deletada com sucesso."}
         except ValueError as e:
             return {"status": "ValueError", "message": str(e)}
