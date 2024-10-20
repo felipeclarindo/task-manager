@@ -1,3 +1,183 @@
+import streamlit as st 
+import pandas as pd
+from modules.utils.utils import visualizar, pula_linha
+from modules.dialogs.dialog import nova_tarefa, apagar_tarefa, infos_tarefa
+
+#variaveis
+lista_tarefas = visualizar()
+lista_pendentes = []
+lista_em_progresso = []
+lista_concluidas = []
+lista_baixa = []
+lista_media = []
+lista_alta = []
+key_counter = 0
+id = 0
+
+#For para colocar valor nas listas requeridas
+for tarefa in lista_tarefas:
+    if tarefa['STATUS'] == 'pendente':
+        lista_pendentes.append(tarefa)
+    if tarefa['STATUS'] == 'em progresso':
+        lista_em_progresso.append(tarefa)
+    if tarefa['STATUS'] == 'concluido':
+        lista_concluidas.append(tarefa)
+    if tarefa['PRIORIDADE'] == 'baixa':
+        lista_baixa.append(tarefa)
+    if tarefa['PRIORIDADE'] == 'media':
+        lista_media.append(tarefa)
+    if tarefa['PRIORIDADE'] == 'alta':
+        lista_alta.append(tarefa)
+
+#DataFrames usados no relatorio
+status_data1 = pd.DataFrame({
+        'Pendentes': [len(lista_pendentes)],
+        'Em Progresso': [len(lista_em_progresso)],
+        'Concluido' : [len(lista_concluidas)]
+        })
+
+prioridade_data1 = pd.DataFrame({
+        'Baixa': [len(lista_baixa)],
+        'Media': [len(lista_media)],
+        'Alta' : [len(lista_alta)]
+        })
+
+status_data2 = pd.DataFrame({
+        'Quantidade': [len(lista_pendentes), len(lista_em_progresso), len(lista_concluidas)],
+        'Tipos': ['Pendentes', 'Em Progresso', 'Concluido'],
+        })
+
+prioridade_data2 = pd.DataFrame({
+        'Quantidade': [len(lista_baixa), len(lista_media), len(lista_alta)],
+        'Tipos': ['baixa', 'media', 'alta'],
+        })
+        
+#Relatorio que fica na pagina principal  
+col1, col2 = st.columns(2)
+
+#Coluna 1 com os dataFrames simples e titulos
+with col1:
+    st.header("Quantidade de Tarefas por status:")
+    st.write(pd.DataFrame(status_data1))
+    pula_linha(10)
+    st.header("Quantidade de Tarefas por prioridade:")
+    st.write(pd.DataFrame(prioridade_data1))
+
+#Coluna 2 com os graficos
+with col2:
+    pula_linha(2)
+    st.bar_chart(status_data2, x="Tipos", y="Quantidade",  color=(235,69,146))
+    st.bar_chart(prioridade_data2, x="Tipos", y="Quantidade",  color=(235,69,146))
+
+#SideBar onde se encontra a manipulaão do Crud e listagem das tarefas
+with st.sidebar:
+    st.image("./static/Img-Logo.png", width=300)
+    st.title("Gerenciador de Tarefas")
+    if st.button("Criar Nova Tarefa +"):
+        nova_tarefa()
+    tab1, tab2, tab3 = st.tabs(["Pendente", "Em progresso", "Concluido"])
+
+    #Primeira vertente com tarefas pendentes
+    with tab1:
+        st.header("Tarefas Pendentes:")
+        for tarefa in lista_pendentes:
+            id = tarefa["ID"]
+            with st.expander(tarefa["TITULO"]):
+                key_counter += 1
+                if st.button(label="Infos",key=key_counter):
+                    infos_tarefa(id)
+                key_counter += 1
+                st.button(label="Atualizar", key=key_counter)
+                key_counter += 1
+                if st.button(label="Apagar",key=key_counter):
+                    apagar_tarefa(id)
+    
+    #Segunda vertente com tarefas em processo
+    with tab2:
+        st.header("Tarefas Em Progresso:")
+        for tarefa in lista_em_progresso:
+            id = tarefa["ID"]
+            with st.expander(tarefa["TITULO"]):
+                key_counter += 1
+                if st.button(label="Infos",key=key_counter):
+                    infos_tarefa(id)
+                key_counter += 1
+                st.button(label="Atualizar", key=key_counter)
+                key_counter += 1
+                if st.button(label="Apagar",key=key_counter):
+                    apagar_tarefa(id)
+        
+    #Terceira vertente com tareas concluidas
+    with tab3:
+        st.header("Tarefas Concluidas:")
+        for tarefa in lista_concluidas:
+            id = tarefa["ID"]
+            with st.expander(tarefa["TITULO"]):
+                key_counter += 1
+                if st.button(label="Infos",key=key_counter):
+                    infos_tarefa(id)
+                key_counter += 1
+                st.button(label="Atualizar", key=key_counter)
+                key_counter += 1
+                if st.button(label="Apagar",key=key_counter):
+                    apagar_tarefa(id)
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+# Codigo base Jennifer:
+       
+# class Tarefa: 
+#     def __init__(self, id, descricao, prioridade, prazo): 
+#         self.id = id 
+#         self.descricao = descricao 
+#         self.prioridade = prioridade 
+#         self.prazo = prazo 
+#         self.status = 'pendente' 
+        
+# class GerenciadorTarefas: 
+#     def __init__(self): 
+#         self.tarefas = [] 
+#         self.next_id = 1 
+        
+#     def adicionar_tarefa(self, descricao, prioridade, prazo): 
+#         nova_tarefa = Tarefa(self.next_id, descricao, prioridade, prazo) 
+#         self.tarefas.append(nova_tarefa) 
+#         self.next_id += 1 
+#         return nova_tarefa 
+    
+#     def relatorios(self): 
+#         pendentes = [tarefa for tarefa in self.tarefas if tarefa.status == 'pendente'] 
+#         em_andamento = [tarefa for tarefa in self.tarefas if tarefa.status == 'em andamento'] 
+#         concluídas = [tarefa for tarefa in self.tarefas if tarefa.status == 'concluída'] 
+#         return { 'pendentes': pendentes, 'em_andamento': em_andamento, 'concluídas': concluídas } 
+    
+# gerenciador = GerenciadorTarefas() 
+# st.title("Gerenciador de Tarefas") 
+# with st.form(key='form_tarefa'): 
+#     descricao = st.text_input("Descrição da Tarefa") 
+#     prioridade = st.selectbox("Prioridade", [1, 2, 3, 4, 5]) 
+#     prazo = st.date_input("Prazo", datetime.today()) 
+#     submit_button = st.form_submit_button("Adicionar Tarefa") 
+#     if submit_button: 
+#         gerenciador.adicionar_tarefa(descricao, prioridade, prazo) 
+#         st.success("Tarefa adicionada com sucesso!") 
+        
+# # Relatórios 
+# st.header("Relatórios") 
+# relatorios = gerenciador.relatorios() 
+# st.subheader("Tarefas Pendentes") 
+# for tarefa in relatorios['pendentes']:
+#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}") 
+#     st.subheader("Tarefas em Andamento") 
+# for tarefa in relatorios['em_andamento']: 
+#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}") 
+#     st.subheader("Tarefas Concluídas") 
+# for tarefa in relatorios['concluídas']: 
+#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}")
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#Codigo base Felipe:
+
 # from os import name, system
 # from .modules.operations.atualizar import _atualizar
 # from .modules.operations.remover import _remover
@@ -58,179 +238,3 @@
 
 #                 case _:
 #                     print("Opção ínvalida.")
-
-import streamlit as st 
-from datetime import datetime 
-import requests
-import json
-# class Tarefa: 
-#     def __init__(self, id, descricao, prioridade, prazo): 
-#         self.id = id 
-#         self.descricao = descricao 
-#         self.prioridade = prioridade 
-#         self.prazo = prazo 
-#         self.status = 'pendente' 
-        
-# class GerenciadorTarefas: 
-#     def __init__(self): 
-#         self.tarefas = [] 
-#         self.next_id = 1 
-        
-#     def adicionar_tarefa(self, descricao, prioridade, prazo): 
-#         nova_tarefa = Tarefa(self.next_id, descricao, prioridade, prazo) 
-#         self.tarefas.append(nova_tarefa) 
-#         self.next_id += 1 
-#         return nova_tarefa 
-    
-#     def relatorios(self): 
-#         pendentes = [tarefa for tarefa in self.tarefas if tarefa.status == 'pendente'] 
-#         em_andamento = [tarefa for tarefa in self.tarefas if tarefa.status == 'em andamento'] 
-#         concluídas = [tarefa for tarefa in self.tarefas if tarefa.status == 'concluída'] 
-#         return { 'pendentes': pendentes, 'em_andamento': em_andamento, 'concluídas': concluídas } 
-    
-# gerenciador = GerenciadorTarefas() 
-# st.title("Gerenciador de Tarefas") 
-# with st.form(key='form_tarefa'): 
-#     descricao = st.text_input("Descrição da Tarefa") 
-#     prioridade = st.selectbox("Prioridade", [1, 2, 3, 4, 5]) 
-#     prazo = st.date_input("Prazo", datetime.today()) 
-#     submit_button = st.form_submit_button("Adicionar Tarefa") 
-#     if submit_button: 
-#         gerenciador.adicionar_tarefa(descricao, prioridade, prazo) 
-#         st.success("Tarefa adicionada com sucesso!") 
-        
-# # Relatórios 
-# st.header("Relatórios") 
-# relatorios = gerenciador.relatorios() 
-# st.subheader("Tarefas Pendentes") 
-# for tarefa in relatorios['pendentes']:
-#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}") 
-#     st.subheader("Tarefas em Andamento") 
-# for tarefa in relatorios['em_andamento']: 
-#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}") 
-#     st.subheader("Tarefas Concluídas") 
-# for tarefa in relatorios['concluídas']: 
-#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}")
-
-def visualizar():
-    url = " http://127.0.0.1:8000/api/tasks/"
-    response = requests.get(url)
-    response.raise_for_status()
-    data = response.json()
-    return json.loads(data['response'])
-    
-
-def vizualizar_tarefa(id):
-    url = f" http://127.0.0.1:8000/api/tasks/{id}"
-    response = requests.get(url)
-    response.raise_for_status()
-    data = response.json()
-    dict_data = json.loads(data)
-    return json.loads(dict_data['response'])
-
-def apagar(id):
-    url = f" http://127.0.0.1:8000/api/tasks/{id}"
-    response = requests.delete(url)
-    response.raise_for_status()
-    resposta = json.loads(response.json())["message"]
-    return resposta
-    
-
-@st.dialog("Nova Tarefa")
-def nova_tarefa():
-    titulo = st.text_input("Titulo: ")
-    prioridade = st.selectbox("Prioridade", ["baixa", "media", "média", "alta"]) 
-    prazo = st.date_input("Prazo", datetime.today()) 
-    status = "pendente"
-    if st.button("Criar"):
-        st.session_state.tarefa = {"titulo": titulo,"prioridade": prioridade, "status": status,"data_vencimento": prazo,"data_criacao": datetime.today()}
-        st.rerun()
-
-@st.dialog("Infos Da Tarefa")
-def ifos_tarefa(id):
-    tarefa = vizualizar_tarefa(id)
-    st.write(f"Titulo: {tarefa["TITULO"]}")
-    st.write(f"Descrição: {tarefa["DESCRICAO"]}")
-    st.write(f"Prioridade: {tarefa["PRIORIDADE"]}")
-    st.write(f"Status: {tarefa["STATUS"]}")
-    st.write(f"Data De Criação: {tarefa["DATA_CRIACAO"]}")
-    st.write(f"Data Prazo: {tarefa["DATA_VENCIMENTO"]}")
-    st.write(f"Email: {tarefa["EMAIL"]}")
-    
-
-lista_tarefas = visualizar()
-lista_pendentes = []
-lista_em_progresso = []
-lista_concluidas = []
-key_counter = 0
-id = 0
-
-for tarefa in lista_tarefas:
-    # if tarefa['STATUS'] == 'pendente':
-    #     lista_pendentes.append(tarefa)
-    # if tarefa['STATUS'] == 'em progresso':
-    #     lista_em_progresso.append(tarefa)
-    # if tarefa['STATUS'] == 'concluido':
-    #     lista_concluidas.append(tarefa)
-    print(lista_tarefas)
-
-with st.sidebar:
-    st.image("./static/Img-Logo.png", width=300)
-    st.title("Gerenciador de Tarefas")
-    if st.button("Criar Nova Tarefa +"):
-        nova_tarefa()
-    tab1, tab2, tab3 = st.tabs(["Pendente", "Em progresso", "Concluido"])
-    col1, col2, col3 = st.columns(3)
-
-    with tab1:
-        st.header("Tarefas Pendentes:")
-        for tarefa in lista_pendentes:
-            id = tarefa["ID"]
-            with st.expander(tarefa["TITULO"]):
-                key_counter += 1
-                if st.button(label="Infos",key=key_counter):
-                    ifos_tarefa(id)
-                key_counter += 1
-                st.button(label="Atualizar", key=key_counter)
-                key_counter += 1
-                if st.button(label="Apagar",key=key_counter):
-                    if apagar(id) == "Tarefa deletada com sucesso.":
-                        st.success("Tarefa deletada com sucesso.")
-                    else:
-                        st.error(apagar(id))
-        
-    with tab2:
-        st.header("Tarefas Em Progresso:")
-        for tarefa in lista_em_progresso:
-            id = tarefa["ID"]
-            with st.expander(tarefa["TITULO"]):
-                key_counter += 1
-                if st.button(label="Infos",key=key_counter):
-                    ifos_tarefa(id)
-                key_counter += 1
-                st.button(label="Atualizar", key=key_counter)
-                key_counter += 1
-                if st.button(label="Apagar",key=key_counter):
-                    if apagar(id) == "Tarefa deletada com sucesso.":
-                        st.success("Tarefa deletada com sucesso.")
-                    else:
-                        st.error(apagar(id))
-        
-        
-    with tab3:
-        st.header("Tarefas Concluidas:")
-        for tarefa in lista_concluidas:
-            id = tarefa["ID"]
-            with st.expander(tarefa["TITULO"]):
-                key_counter += 1
-                if st.button(label="Infos",key=key_counter):
-                    ifos_tarefa(id)
-                key_counter += 1
-                st.button(label="Atualizar", key=key_counter)
-                key_counter += 1
-                if st.button(label="Apagar",key=key_counter):
-                    if apagar(id) == "Tarefa deletada com sucesso.":
-                        st.success("Tarefa deletada com sucesso.")
-                    else:
-                        st.error(apagar(id))
-        
