@@ -17,6 +17,8 @@ from ..utils.utils import (
     convert_data,
 )
 from fastapi import HTTPException
+from typing import Optional
+
 
 class Crud:
     def __init__(self) -> None:
@@ -67,8 +69,6 @@ class Crud:
                 return {"status": "Success", "message": "Nenhuma tarefa encontrada."}
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
         
     # Obtendo dados por ID
     def get_by_id(self, id: int):
@@ -95,8 +95,6 @@ class Crud:
                 raise HTTPException(status_code=404, detail=f"Tarefa com id {id} não encontrada.")
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
 
     # Inserir dados
     def post(self, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> dict:
@@ -146,12 +144,9 @@ class Crud:
                 raise HTTPException(status_code=400, detail="Falha na validação.")
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-
 
     # Atualizar dados
-    def put(self, id: int, titulo: str, descricao: str, prioridade: str, prazo: int, email: str, status: str = None) -> dict:
+    def put(self, id: int, titulo: str, descricao: str, prioridade: str, prazo: int, email: str, status: Optional[str] = None) -> dict:
         try:
             self.validate_fields(titulo, descricao, prioridade, prazo, email)
 
@@ -163,7 +158,7 @@ class Crud:
                     # Verificar e validar o status recebido
                     if status is None:
                         status = TaskState.PENDENTE
-                    elif status not in TaskState.__members__:
+                    elif status not in TaskState.__members__.values():
                         raise HTTPException(status_code=400, detail="Status inválido.")
 
                     command = """
@@ -193,7 +188,7 @@ class Crud:
                 # Enviar notificação por e-mail
                 subject = f"Tarefa Atualizada: {titulo}"
                 message_body = (
-                    f"Uma nova tarefa foi atualizada:\n\n"
+                    f"Uma tarefa foi atualizada:\n\n"
                     f"Título: {titulo};\n"
                     f"Descrição: {descricao};\n"
                     f"Prioridade: {prioridade};\n"
@@ -210,9 +205,6 @@ class Crud:
                 raise HTTPException(status_code=400, detail="Dados inválidos.")
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-
 
     # Deletar
     def delete(self, id: int) -> dict:
@@ -225,7 +217,7 @@ class Crud:
                 result = cursor.fetchone() 
 
                 if not result:
-                    raise HTTPException(status_code=404, detail="Email não encontrado para envio do email!")
+                    raise HTTPException(status_code=404, detail=f"Tarefa com id {id} não encontrada.")
 
                 email = result[0]
 
@@ -241,6 +233,3 @@ class Crud:
             return {"status": "Success", "message": "Tarefa deletada com sucesso."}
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-
