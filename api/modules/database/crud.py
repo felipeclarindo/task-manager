@@ -143,11 +143,12 @@ class Crud:
                     "message": "Tarefa criada com sucesso.",
                 }
             else:
-                raise Exception("Falha na validação.")
+                raise HTTPException(status_code=400, detail="Falha na validação.")
         except ValueError as e:
-            return {"status": "valueError", "message": str(e)}
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            return {"status": "error", "message": str(e)}
+            raise HTTPException(status_code=500, detail=str(e))
+
 
     # Atualizar dados
     def put(self, id: int, titulo: str, descricao: str, prioridade: str, prazo: int, email: str, status: str = None) -> dict:
