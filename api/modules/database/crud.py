@@ -16,6 +16,7 @@ from ..utils.utils import (
     get_data_criacao,
     convert_data,
 )
+from fastapi import HTTPException
 
 class Crud:
     def __init__(self) -> None:
@@ -65,9 +66,9 @@ class Crud:
 
                 return {"status": "Success", "message": "Nenhuma tarefa encontrada."}
         except ValueError as e:
-            return {"status": "ValueError", "message": str(e)}
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            return {"status": "Error", "message": str(e)}
+            raise HTTPException(status_code=500, detail=str(e))
         
     # Obtendo dados por ID
     def get_by_id(self, id: int):
@@ -91,11 +92,11 @@ class Crud:
                         "message": "Tarefa encontrada com sucesso",
                         "response": tarefa_dict
                     }
-                raise Exception(f"Tarefa com id {id} não encontrada.")
+                raise HTTPException(status_code=404, detail=f"Tarefa com id {id} não encontrada.")
         except ValueError as e:
-            return {"status": "ValueError", "message": str(e)}
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            return {"status": "Error", "message": str(e)}   
+            raise HTTPException(status_code=500, detail=str(e))
 
     # Inserir dados
     def post(self, titulo: str, descricao: str, prioridade: str, prazo: int, email: str) -> dict:
@@ -162,7 +163,7 @@ class Crud:
                     if status is None:
                         status = TaskState.PENDENTE
                     elif status not in TaskState.__members__:
-                        return {"status": "Error", "message": "Status inválido."}
+                        raise HTTPException(status_code=400, detail="Status inválido.")
 
                     command = """
                         UPDATE tarefas
@@ -181,7 +182,7 @@ class Crud:
                             "descricao": descricao,
                             "data_vencimento": data_vencimento,
                             "prioridade": prioridade,
-                            "status": status,  # Atualizar com o status informado ou PENDENTE por padrão
+                            "status": status,  
                             "id": id,
                             "email": email
                         },
@@ -205,11 +206,12 @@ class Crud:
                     "message": "Tarefa atualizada com sucesso.",
                 }
             else:
-                return {"status": "Error", "message": "Dados inválidos."}
+                raise HTTPException(status_code=400, detail="Dados inválidos.")
         except ValueError as e:
-            return {"status": "ValueError", "message": str(e)}
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            return {"status": "Error", "message": str(e)}
+            raise HTTPException(status_code=500, detail=str(e))
+
 
     # Deletar
     def delete(self, id: int) -> dict:
@@ -218,22 +220,18 @@ class Crud:
             delete_command = "DELETE FROM tarefas WHERE ID = :id"
             
             with self.connection.cursor() as cursor:
-                # Executa o comando SELECT para obter o email
                 cursor.execute(select_email, {"id": id})
                 result = cursor.fetchone() 
 
-                # Se a tarefa não for encontrada
                 if not result:
-                    print("Email não encontrado!")
+                    raise HTTPException(status_code=404, detail="Email não encontrado para envio do email!")
 
-                email = result[0]  # Pega o email do resultado
+                email = result[0]
 
-                # Executa o comando DELETE para excluir a tarefa
                 cursor.execute(delete_command, {"id": id})
             
             self.connection.commit()
 
-            # Enviar notificação por e-mail
             subject = "Tarefa Deletada"
             message_body = f"A sua tarefa com id: {id} foi apagada com sucesso!\n"
 
@@ -241,6 +239,7 @@ class Crud:
             
             return {"status": "Success", "message": "Tarefa deletada com sucesso."}
         except ValueError as e:
-            return {"status": "ValueError", "message": str(e)}
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            return {"status": "Error", "message": str(e)}
+            raise HTTPException(status_code=500, detail=str(e))
+
