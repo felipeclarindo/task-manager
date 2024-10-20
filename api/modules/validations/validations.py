@@ -111,9 +111,7 @@ def validate_desc(descricao: str) -> bool:
         if not descricao:
             raise ValueError("A descrição não pode ser vázia")
         
-        descricao = descricao.strip().lower()
-        if all(c.isalnum() or c.isspace() for c in descricao):
-            return True
+        return True
         
     except ValidateError as e:
         print(f"Erro de Validação: {e}")
