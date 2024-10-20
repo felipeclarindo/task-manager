@@ -14,7 +14,7 @@ Gerenciador de tarefas desenvolvido em Python, utilizando oracledb para inserç�
 
 - **Banco de Dados Oracle:** Todas as informações são armazenadas e manipuladas através de uma conexão com o OracleDB, garantindo persistência e segurança dos dados.
 
-- **Relatorio:** Relátorio sobre as tarefas pedentes, concluidas e em atraso.
+- **Relatório:** Relatório sobre as tarefas pedentes, concluídas e em atraso.
 
 ## Requisitos
 

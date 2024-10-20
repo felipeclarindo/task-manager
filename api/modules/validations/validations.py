@@ -73,7 +73,7 @@ def validate_status(status: str) -> bool:
             if status in ["concluido", "pendente", "em progresso"]:
                 return True
             else:
-                raise ValidateError("Status invalido!")
+                raise ValidateError("Status inválido!")
         else:
             raise ValueError("Status não pode ser vazio.")
     except ValidateError as e:
@@ -88,7 +88,7 @@ def validate_status(status: str) -> bool:
 def validate_email(email: str) -> bool:
     try:
         if not email:
-            raise ValueError("O número não pode ser vázio.")
+            raise ValueError("O número não pode ser vazio.")
         
         email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 
@@ -109,7 +109,7 @@ def validate_email(email: str) -> bool:
 def validate_desc(descricao: str) -> bool:
     try:
         if not descricao:
-            raise ValueError("A descrição não pode ser vázia")
+            raise ValueError("A descrição não pode ser vazia.")
         
         return True
         
