@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .modules.database.crud import Crud
+from .modules.database.modules import Crud
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 

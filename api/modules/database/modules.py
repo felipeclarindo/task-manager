@@ -15,7 +15,6 @@ from ..utils.utils import (
     due_date,
     get_data_criacao,
     convert_data,
-    convert_data_for_email
 )
 
 class Crud:

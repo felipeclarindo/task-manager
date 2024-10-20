@@ -52,6 +52,9 @@ prioridade_data2 = pd.DataFrame({
         'Tipos': ['baixa', 'media', 'alta'],
         })
         
+cronograma_tarefas = pd.DataFrame({
+    
+})
 #Relatorio que fica na pagina principal  
 col1, col2 = st.columns(2)
 
