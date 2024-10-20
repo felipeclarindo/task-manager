@@ -1,2 +1,0 @@
-def _adicionar():
-    pass
