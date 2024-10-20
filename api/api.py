@@ -1,27 +1,14 @@
 from fastapi import FastAPI
-from .modules.database.models import Crud
+from .modules.database.crud import Crud
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-class PostTask(BaseModel):
+class Task(BaseModel):
     titulo: str
     descricao: str
     prioridade: str
     prazo: int
     email: str
-
-class PutTask(BaseModel):
-    id: int
-    titulo: str
-    descricao: str
-    prioridade: str
-    prazo: int
-    email: str
-
-class PatchTask(BaseModel):
-    id: int
-    dado: str
-    novo_dado: str
 
 app = FastAPI()
 crud = Crud()
@@ -41,7 +28,7 @@ app.add_middleware(
 
 # Criando rota principal
 @app.get("/api")
-async def index():
+async def home():
     return {"mensagem": "O Gerenciador de tarefas está online."}
 
 # Criando rota de pegar dados
@@ -52,26 +39,20 @@ async def get_all_tasks():
 
 # Criando rota de pegar dado com id
 @app.get("/api/tasks/{id}")
-async def get_task_with_id(id: int):
-    response = crud.get_with_id(id)
+async def get_task_by_id(id: int):
+    response = crud.get_by_id(id)
     return response
 
 # Criando rota de envio de dados
 @app.post("/api/tasks")
-async def post_task(data: PostTask):
-    response = crud.post(data.titulo, data.descricao, data.prioridade, data.prazo, data.email)
+async def post_task(body: Task):
+    response = crud.post(body.titulo, body.descricao, body.prioridade, body.prazo, body.email)
     return response
 
 # Criando rota de atualização de dados
-@app.put("/api/tasks")
-async def put_task(data: PutTask):
-    response = crud.put(data.id, data.titulo, data.descricao, data.prioridade, data.prazo, data.email)
-    return response
-
-# Criando rota de atualização de um único dado
-@app.patch("/api/tasks")
-async def patch_task(data: PatchTask):
-    response = crud.patch(data.id, data.dado, data.novo_dado)
+@app.put("/api/tasks/{id}")
+async def put_task(id: int , body: Task):
+    response = crud.put(id, body.titulo, body.descricao, body.prioridade, body.prazo, body.email)
     return response
 
 # Criando rota de remoção de dado
