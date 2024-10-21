@@ -26,7 +26,6 @@ class Notificador:
             server.sendmail(msg['From'], to_email, msg.as_string())
 
             print("Email enviado com sucesso!")
+            server.quit()
         except Exception as e:
             print(f"Erro: {str(e)}")
-        finally:
-            server.quit()  # Fechar conexão
