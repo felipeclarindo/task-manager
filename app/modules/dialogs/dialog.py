@@ -82,6 +82,11 @@ def atualizar_tarefa(id:int):
     if st.button("Atualizar"):
         tarefa = {"titulo": titulo, "descricao":descricao, "prioridade": prioridade, "prazo": prazo,"email": email, "status": status}
         try:
+            validate_title(titulo)
+            validate_desc(descricao)
+            validate_prioridade(prioridade)
+            validate_prazo(prazo)
+            validate_email(email)
             resposta_api = atualizar(id,json.dumps(tarefa))
             st.success(resposta_api["message"])
             time.sleep(1)
