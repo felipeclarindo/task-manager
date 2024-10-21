@@ -8,7 +8,7 @@ def pula_linha(n:int):
     for i in range(0,n):
         st.write(" ")
 
-#Função que retorna uma lista com dicionario de tarefas vinda do getAll
+#Função que retorna uma lista com dicionário de tarefas vinda do getAll
 def visualizar() -> list[dict]:
     url = " http://127.0.0.1:8000/api/tasks/"
     response = requests.get(url)
@@ -18,7 +18,7 @@ def visualizar() -> list[dict]:
         return []
     return data['response']
     
-#Função que retorna uma lista com dicionario de tarefas vinda do getById
+#Função que retorna uma lista com dicionário de tarefas vinda do getById
 def vizualizar_tarefa(id:int) -> dict:
     url = f" http://127.0.0.1:8000/api/tasks/{id}"
     response = requests.get(url)

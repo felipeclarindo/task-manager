@@ -7,9 +7,9 @@ import pandas as pd
 from ..utils.utils import criar_tarefa, vizualizar_tarefa, apagar, atualizar
 from ..validations.validations import validate_title, validate_desc, validate_prazo, validate_prioridade, validate_email
 
-#Funções dialog criam uma caixa de dialogo com o usuario
+#Funções dialog criam uma caixa de diálogo com o usuario
 
-#Função para o botão nova tarefa, onde o usuario colocara as informações necessarias para criar uma nova tarefas
+#Função para o botão nova tarefa, onde o usuário colocará as informações necessárias para criar uma nova tarefa
 @st.dialog("Nova Tarefa")
 def nova_tarefa():
     titulo = st.text_input("Titulo: ")
@@ -45,7 +45,7 @@ def nova_tarefa():
         except Exception as e:
             st.error(f"Ocorreu um erro inesperado: {e}")
         
-#Função para o botão info, onde o usuario poderá ver todas as informações daquela tarefa
+#Função para o botão info, onde o usuário poderá ver todas as informações daquela tarefa
 @st.dialog("Infos Da Tarefa")
 def infos_tarefa(id:int):
     tarefa = vizualizar_tarefa(id)
@@ -57,7 +57,7 @@ def infos_tarefa(id:int):
     st.write(f"Data Prazo: {tarefa["DATA_VENCIMENTO"]}")
     st.write(f"Email: {tarefa["EMAIL"]}")
     
-#Função para o botão apagar, onde o usuario poderá decidir se vai apagar a tarefa ou não
+#Função para o botão apagar, onde o usuário poderá decidir se vai apagar a tarefa ou não
 @st.dialog("Deseja Realmente Apagar a Tarefa?")
 def apagar_tarefa(id):
     if st.button("Apagar"):

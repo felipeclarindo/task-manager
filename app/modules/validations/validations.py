@@ -36,14 +36,14 @@ def validate_email(email: str) -> bool:
     characters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_")
 
     if not email:
-        raise ValueError("O e-mail não pode ser vazio.")
+        raise ValueError("O e-mail não pode ser vazio!")
 
     is_in_chars = lambda c: c in characters and len(c) == 1
 
     try:
         user, domain = email.split("@")
-    except ValueError:
-        raise ValueError("O e-mail deve conter um '@'.")
+    except ValidateError:
+        raise ValidateError("O e-mail deve conter um '@'.")
 
     if not user or not all(is_in_chars(c) for c in user):
         raise ValidateError("E-mail inválido! Verifique o formato do e-mail.")

@@ -33,7 +33,7 @@ def validate_prioridade(prioridade: str) -> bool:
             if prioridade in ["baixa", "media", "média", "alta"]:
                 return True
             else:
-                raise ValidateError("Prioridade invalida.")
+                raise ValidateError("Prioridade inválida.")
         else:
             raise ValueError("Prioridade não pode ser vazia.")
     except ValidateError as e:

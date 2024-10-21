@@ -1,7 +1,6 @@
 from datetime import date, timedelta, datetime
 from enum import StrEnum
 
-
 class EstadoUser(StrEnum):
     LIBERADO = "liberado"
     BLOQUEADO = "bloqueado"
