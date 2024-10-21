@@ -5,6 +5,7 @@ import json
 import time
 import pandas as pd
 from ..utils.utils import criar_tarefa, vizualizar_tarefa, apagar, atualizar
+from ..validations.validations import validate_title, validate_desc, validate_prazo, validate_prioridade, validate_email
 
 #Funções dialog criam uma caixa de dialogo com o usuario
 
@@ -21,6 +22,11 @@ def nova_tarefa():
     if st.button("Criar"):
         tarefa = {"titulo": titulo, "descricao":descricao, "prioridade": prioridade, "prazo": prazo,"email": email}
         try:
+            validate_title(titulo)
+            validate_desc(descricao)
+            validate_prioridade(prioridade)
+            validate_prazo(prazo)
+            validate_email(email)
             resposta_api = criar_tarefa(json.dumps(tarefa))
             st.success(resposta_api["message"])
             time.sleep(1)
