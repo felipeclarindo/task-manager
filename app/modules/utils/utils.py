@@ -44,6 +44,7 @@ def atualizar(id:int):
     url = f"http://127.0.0.1:8000/api/tasks/{id}"
     response = requests.put(url, data)
 
+
 # def dicionario_tarefa_prioridade(lista_tarefas: list[dict]) -> list(dict):
 #     lista_ordenada = []
 #     for tarefa in lista_tarefas:

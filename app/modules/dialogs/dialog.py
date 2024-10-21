@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 import json
 import time
-from modules.utils.utils import criar_tarefa, vizualizar_tarefa, apagar
+from ..utils.utils import criar_tarefa, vizualizar_tarefa, apagar
 
 #Funções dialog criam uma caixa de dialogo com o usuario
 

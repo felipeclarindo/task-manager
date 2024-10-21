@@ -3,7 +3,7 @@ import pandas as pd
 from modules.utils.utils import visualizar, pula_linha
 from modules.dialogs.dialog import nova_tarefa, apagar_tarefa, infos_tarefa
 
-#variaveis
+# Variáveis
 lista_tarefas = visualizar()
 lista_pendentes = []
 lista_em_progresso = []
@@ -29,7 +29,7 @@ for tarefa in lista_tarefas:
     if tarefa['PRIORIDADE'] == 'alta':
         lista_alta.append(tarefa)
 
-#DataFrames usados no relatorio
+#DataFrames usados no relatório
 status_data1 = pd.DataFrame({
         'Pendentes': [len(lista_pendentes)],
         'Em Progresso': [len(lista_em_progresso)],
@@ -55,10 +55,10 @@ prioridade_data2 = pd.DataFrame({
 cronograma_tarefas = pd.DataFrame({
     
 })
-#Relatorio que fica na pagina principal  
+#Relatório que fica na página principal  
 col1, col2 = st.columns(2)
 
-#Coluna 1 com os dataFrames simples e titulos
+#Coluna 1 com os dataFrames simples e títulos
 with col1:
     st.header("Quantidade de Tarefas por status:")
     st.write(pd.DataFrame(status_data1))
@@ -66,13 +66,13 @@ with col1:
     st.header("Quantidade de Tarefas por prioridade:")
     st.write(pd.DataFrame(prioridade_data1))
 
-#Coluna 2 com os graficos
+#Coluna 2 com os gráficos
 with col2:
     pula_linha(2)
     st.bar_chart(status_data2, x="Tipos", y="Quantidade",  color=(235,69,146))
     st.bar_chart(prioridade_data2, x="Tipos", y="Quantidade",  color=(235,69,146))
 
-#SideBar onde se encontra a manipulaão do Crud e listagem das tarefas
+#SideBar onde se encontra a manipulação do Crud e listagem das tarefas
 with st.sidebar:
     st.image("./static/Img-Logo.png")
     st.title("Gerenciador de Tarefas")
@@ -95,7 +95,7 @@ with st.sidebar:
                 if st.button(label="Apagar",key=key_counter):
                     apagar_tarefa(id)
     
-    #Segunda vertente com tarefas em processo
+    #Segunda vertente com tarefas em progresso
     with tab2:
         st.header("Tarefas Em Progresso:")
         for tarefa in lista_em_progresso:
@@ -110,7 +110,7 @@ with st.sidebar:
                 if st.button(label="Apagar",key=key_counter):
                     apagar_tarefa(id)
         
-    #Terceira vertente com tareas concluidas
+    #Terceira vertente com tarefas concluídas
     with tab3:
         st.header("Tarefas Concluidas:")
         for tarefa in lista_concluidas:
@@ -127,7 +127,7 @@ with st.sidebar:
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 # Codigo base Jennifer:
-       
+
 # class Tarefa: 
 #     def __init__(self, id, descricao, prioridade, prazo): 
 #         self.id = id 

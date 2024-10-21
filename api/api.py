@@ -1,5 +1,6 @@
+from typing import Optional
 from fastapi import FastAPI
-from .modules.database.modules import Crud
+from .modules.database.crud import Crud
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,6 +10,14 @@ class Task(BaseModel):
     prioridade: str
     prazo: int
     email: str
+
+class TaskPut(BaseModel):
+    titulo: str
+    descricao: str
+    prioridade: str
+    prazo: int
+    email: str
+    status: Optional[str] = None
 
 app = FastAPI()
 crud = Crud()
@@ -51,8 +60,8 @@ async def post_task(body: Task):
 
 # Criando rota de atualização de dados
 @app.put("/api/tasks/{id}")
-async def put_task(id: int , body: Task):
-    response = crud.put(id, body.titulo, body.descricao, body.prioridade, body.prazo, body.email)
+async def put_task(id: int , body: TaskPut):
+    response = crud.put(id, body.titulo, body.descricao, body.prioridade, body.prazo, body.email, body.status)
     return response
 
 # Criando rota de remoção de dado
