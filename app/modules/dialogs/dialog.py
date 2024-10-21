@@ -61,3 +61,14 @@ def apagar_tarefa(id):
     if st.button("Voltar"):
         st.rerun()
         
+@st.dialog("Atualizar Tarefa: ")
+def atualizar_tarefa(id:int):
+    tarefa = vizualizar_tarefa(id)
+    titulo = st.text_input("Titulo: ", value=tarefa["TITULO"])
+    descricao = st.text_input("Descrição: ", value=tarefa["DESCRICAO"])
+    prioridade = st.selectbox("Prioridade", ["baixa", "media", "alta"]) 
+    prazo = st.date_input("Prazo", value=tarefa["DATA_VENCIMENTO"]) 
+    diferença = prazo - datetime.today().date()
+    prazo = diferença.days
+    email = st.text_input("E-mail: ", )
+        

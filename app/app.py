@@ -74,7 +74,7 @@ with col2:
 
 #SideBar onde se encontra a manipulaão do Crud e listagem das tarefas
 with st.sidebar:
-    st.image("./static/Img-Logo.png", width=300)
+    st.image("./static/Img-Logo.png")
     st.title("Gerenciador de Tarefas")
     if st.button("Criar Nova Tarefa +"):
         nova_tarefa()
