@@ -1,10 +1,11 @@
 import streamlit as st 
 import pandas as pd
-from modules.utils.utils import visualizar, pula_linha
-from modules.dialogs.dialog import nova_tarefa, apagar_tarefa, infos_tarefa
+from modules.utils.utils import visualizar, pula_linha, lista_cronograma
+from modules.dialogs.dialog import nova_tarefa, apagar_tarefa, infos_tarefa, atualizar_tarefa, criar_planejamento
 
 # Variáveis
 lista_tarefas = visualizar()
+lista_ordenada = lista_cronograma(lista_tarefas)
 lista_pendentes = []
 lista_em_progresso = []
 lista_concluidas = []
@@ -40,6 +41,13 @@ prioridade_data1 = pd.DataFrame({
         'Baixa': [len(lista_baixa)],
         'Media': [len(lista_media)],
         'Alta' : [len(lista_alta)]
+        })
+
+planejamento_data = pd.DataFrame({
+        'Titulo': [tarefa["titulo"] for tarefa in lista_ordenada if tarefa["status"] != "concluido"],
+        'Status': [tarefa["status"] for tarefa in lista_ordenada if tarefa["status"] != "concluido"],
+        'Prioridade' : [tarefa["prioridade"] for tarefa in lista_ordenada if tarefa["status"] != "concluido"],
+        'Dias Restantes': [tarefa["dias para entrega"] for tarefa in lista_ordenada if tarefa["status"] != "concluido"]
         })
 
 status_data2 = pd.DataFrame({
@@ -78,6 +86,8 @@ with st.sidebar:
     st.title("Gerenciador de Tarefas")
     if st.button("Criar Nova Tarefa +"):
         nova_tarefa()
+    if st.button("Criar Planejamento"):
+        criar_planejamento(planejamento_data)
     tab1, tab2, tab3 = st.tabs(["Pendente", "Em progresso", "Concluido"])
 
     #Primeira vertente com tarefas pendentes
@@ -90,7 +100,8 @@ with st.sidebar:
                 if st.button(label="Infos",key=key_counter):
                     infos_tarefa(id)
                 key_counter += 1
-                st.button(label="Atualizar", key=key_counter)
+                if st.button(label="Atualizar", key=key_counter):
+                    atualizar_tarefa(id)
                 key_counter += 1
                 if st.button(label="Apagar",key=key_counter):
                     apagar_tarefa(id)
@@ -105,7 +116,8 @@ with st.sidebar:
                 if st.button(label="Infos",key=key_counter):
                     infos_tarefa(id)
                 key_counter += 1
-                st.button(label="Atualizar", key=key_counter)
+                if st.button(label="Atualizar", key=key_counter):
+                    atualizar_tarefa(id)
                 key_counter += 1
                 if st.button(label="Apagar",key=key_counter):
                     apagar_tarefa(id)
@@ -120,7 +132,8 @@ with st.sidebar:
                 if st.button(label="Infos",key=key_counter):
                     infos_tarefa(id)
                 key_counter += 1
-                st.button(label="Atualizar", key=key_counter)
+                if st.button(label="Atualizar", key=key_counter):
+                    atualizar_tarefa(id)
                 key_counter += 1
                 if st.button(label="Apagar",key=key_counter):
                     apagar_tarefa(id)

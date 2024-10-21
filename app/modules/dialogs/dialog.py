@@ -3,7 +3,8 @@ from datetime import datetime
 import requests
 import json
 import time
-from ..utils.utils import criar_tarefa, vizualizar_tarefa, apagar
+import pandas as pd
+from ..utils.utils import criar_tarefa, vizualizar_tarefa, apagar, atualizar
 
 #Funções dialog criam uma caixa de dialogo com o usuario
 
@@ -67,8 +68,35 @@ def atualizar_tarefa(id:int):
     titulo = st.text_input("Titulo: ", value=tarefa["TITULO"])
     descricao = st.text_input("Descrição: ", value=tarefa["DESCRICAO"])
     prioridade = st.selectbox("Prioridade", ["baixa", "media", "alta"]) 
-    prazo = st.date_input("Prazo", value=tarefa["DATA_VENCIMENTO"]) 
+    status = st.selectbox("Status", ["pendente", "em progresso", "concluido"]) 
+    prazo = st.date_input("Prazo", value=datetime.strptime(tarefa["DATA_VENCIMENTO"], "%d/%m/%Y").date()) 
     diferença = prazo - datetime.today().date()
     prazo = diferença.days
-    email = st.text_input("E-mail: ", )
+    email = st.text_input("E-mail: ", value=tarefa["EMAIL"])
+    if st.button("Atualizar"):
+        tarefa = {"titulo": titulo, "descricao":descricao, "prioridade": prioridade, "prazo": prazo,"email": email, "status": status}
+        try:
+            resposta_api = atualizar(id,json.dumps(tarefa))
+            st.success(resposta_api["message"])
+            time.sleep(1)
+            st.rerun()
+        except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 422:
+                st.error("Erro de validação: os dados enviados não estão corretos.")
+            else:
+                st.error(f"Erro ao atualizar a tarefa: {err}")
+            
+            st.write("Resposta da API:", err.response.text)
+
+        except json.JSONDecodeError:
+            st.error("Erro ao processar a resposta da API. Resposta inválida.")
+
+        except Exception as e:
+            st.error(f"Ocorreu um erro inesperado: {e}")
+            
+@st.dialog("Planejamento:")
+def criar_planejamento(data:pd.DataFrame):
+    st.write(pd.DataFrame(data))
+        
+    
         
