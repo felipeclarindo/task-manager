@@ -84,9 +84,9 @@ with col2:
 with st.sidebar:
     st.image("./static/Img-Logo.png")
     st.title("Gerenciador de Tarefas")
-    if st.button("Criar Nova Tarefa +"):
+    if st.button("Criar nova tarefa +"):
         nova_tarefa()
-    if st.button("Criar Planejamento"):
+    if st.button("Criar planejamento"):
         criar_planejamento(planejamento_data)
     tab1, tab2, tab3 = st.tabs(["Pendente", "Em progresso", "Concluido"])
 
@@ -137,120 +137,3 @@ with st.sidebar:
                 key_counter += 1
                 if st.button(label="Apagar",key=key_counter):
                     apagar_tarefa(id)
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------
-# Codigo base Jennifer:
-
-# class Tarefa: 
-#     def __init__(self, id, descricao, prioridade, prazo): 
-#         self.id = id 
-#         self.descricao = descricao 
-#         self.prioridade = prioridade 
-#         self.prazo = prazo 
-#         self.status = 'pendente' 
-        
-# class GerenciadorTarefas: 
-#     def __init__(self): 
-#         self.tarefas = [] 
-#         self.next_id = 1 
-        
-#     def adicionar_tarefa(self, descricao, prioridade, prazo): 
-#         nova_tarefa = Tarefa(self.next_id, descricao, prioridade, prazo) 
-#         self.tarefas.append(nova_tarefa) 
-#         self.next_id += 1 
-#         return nova_tarefa 
-    
-#     def relatorios(self): 
-#         pendentes = [tarefa for tarefa in self.tarefas if tarefa.status == 'pendente'] 
-#         em_andamento = [tarefa for tarefa in self.tarefas if tarefa.status == 'em andamento'] 
-#         concluídas = [tarefa for tarefa in self.tarefas if tarefa.status == 'concluída'] 
-#         return { 'pendentes': pendentes, 'em_andamento': em_andamento, 'concluídas': concluídas } 
-    
-# gerenciador = GerenciadorTarefas() 
-# st.title("Gerenciador de Tarefas") 
-# with st.form(key='form_tarefa'): 
-#     descricao = st.text_input("Descrição da Tarefa") 
-#     prioridade = st.selectbox("Prioridade", [1, 2, 3, 4, 5]) 
-#     prazo = st.date_input("Prazo", datetime.today()) 
-#     submit_button = st.form_submit_button("Adicionar Tarefa") 
-#     if submit_button: 
-#         gerenciador.adicionar_tarefa(descricao, prioridade, prazo) 
-#         st.success("Tarefa adicionada com sucesso!") 
-        
-# # Relatórios 
-# st.header("Relatórios") 
-# relatorios = gerenciador.relatorios() 
-# st.subheader("Tarefas Pendentes") 
-# for tarefa in relatorios['pendentes']:
-#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}") 
-#     st.subheader("Tarefas em Andamento") 
-# for tarefa in relatorios['em_andamento']: 
-#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}") 
-#     st.subheader("Tarefas Concluídas") 
-# for tarefa in relatorios['concluídas']: 
-#     st.write(f"{tarefa.id} - {tarefa.descricao} | Prioridade: {tarefa.prioridade} | Prazo: {tarefa.prazo} | Status: {tarefa.status}")
-
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------
-#Codigo base Felipe:
-
-# from os import name, system
-# from .modules.operations.atualizar import _atualizar
-# from .modules.operations.remover import _remover
-# from .modules.operations.adicionar import _adicionar
-# from .modules.operations.visualizar import _visualizar
-
-# class App:
-#     def __init__(self) -> None:
-#         pass
-
-#     def clear(self) -> None:
-#         if name == "nt":
-#             system("cls")
-#         else:
-#             system("clear")
-
-#     def menu(self):
-#         self.clear()
-#         print("-" * 40)
-#         print("--------- Task Manager --------")
-#         print("-" * 40)
-#         print("1 - Adicionar Tarefa.")
-#         print("2 - Atualizar Tarefa.")
-#         print("3 - Remover Tarefa.")
-#         print("4 - Ver Tarefas")
-#         print("5 - Sair")
-
-#     def adicionar_tarefa(self):
-#         _adicionar()
-
-#     def atualizar_tarefa(self):
-#         _atualizar()
-
-#     def remover_tarefa(self):
-#         _remover()
-
-#     def visualizar_tarefas(self):
-#         _visualizar()
-
-#     def run(self):
-#         sair = False
-#         while not sair:
-#             self.menu()
-#             option = str(input("Informe uma opção: "))
-#             match option:
-#                 case "1":
-#                     self.adicionar_tarefa()
-#                 case "2":
-#                     self.atualizar_tarefa()
-#                 case "3":
-#                     self.remover_tarefa()
-#                 case "4":
-#                     self.visualizar_tarefas()
-#                 case "5":
-#                     saida_valida = False
-#                     while not saida_valida:
-#                         self.menu()
-
-#                 case _:
-#                     print("Opção ínvalida.")

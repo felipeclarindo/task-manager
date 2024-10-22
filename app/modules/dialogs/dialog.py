@@ -10,15 +10,15 @@ from ..validations.validations import validate_title, validate_desc, validate_pr
 #Funções dialog criam uma caixa de diálogo com o usuario
 
 #Função para o botão nova tarefa, onde o usuário colocará as informações necessárias para criar uma nova tarefa
-@st.dialog("Nova Tarefa")
+@st.dialog("Nova tarefa")
 def nova_tarefa():
-    titulo = st.text_input("Titulo: ")
-    descricao = st.text_input("Descrição: ")
-    prioridade = st.selectbox("Prioridade", ["baixa", "media", "alta"]) 
+    titulo = st.text_input("Titulo: ", placeholder="Digite o título")
+    descricao = st.text_input("Descrição: ", placeholder="Digite uma descrição")
+    prioridade = st.selectbox("Prioridade", ["baixa", "media", "alta"], index= None, placeholder="Escolha a prioridade desejada") 
     prazo = st.date_input("Prazo", datetime.today()) 
     diferença = prazo - datetime.today().date()
     prazo = diferença.days
-    email = st.text_input("E-mail: ")
+    email = st.text_input("E-mail: ", placeholder="Digite seu e-mail")
     if st.button("Criar"):
         tarefa = {"titulo": titulo, "descricao":descricao, "prioridade": prioridade, "prazo": prazo,"email": email}
         try:
@@ -46,7 +46,7 @@ def nova_tarefa():
             st.error(f"Ocorreu um erro inesperado: {e}")
         
 #Função para o botão info, onde o usuário poderá ver todas as informações daquela tarefa
-@st.dialog("Infos Da Tarefa")
+@st.dialog("Infos da tarefa")
 def infos_tarefa(id:int):
     tarefa = vizualizar_tarefa(id)
     st.write(f"Titulo: {tarefa["TITULO"]}")
@@ -58,7 +58,7 @@ def infos_tarefa(id:int):
     st.write(f"Email: {tarefa["EMAIL"]}")
     
 #Função para o botão apagar, onde o usuário poderá decidir se vai apagar a tarefa ou não
-@st.dialog("Deseja Realmente Apagar a Tarefa?")
+@st.dialog("Deseja realmente apagar a tarefa?")
 def apagar_tarefa(id):
     if st.button("Apagar"):
         apagar(id) 
@@ -68,13 +68,15 @@ def apagar_tarefa(id):
     if st.button("Voltar"):
         st.rerun()
         
-@st.dialog("Atualizar Tarefa: ")
+@st.dialog("Atualizar tarefa: ")
 def atualizar_tarefa(id:int):
+    lista_prioridade = ["baixa", "media", "alta"]
+    lista_status = ["pendente", "em progresso", "concluido"]
     tarefa = vizualizar_tarefa(id)
     titulo = st.text_input("Titulo: ", value=tarefa["TITULO"])
     descricao = st.text_input("Descrição: ", value=tarefa["DESCRICAO"])
-    prioridade = st.selectbox("Prioridade", ["baixa", "media", "alta"]) 
-    status = st.selectbox("Status", ["pendente", "em progresso", "concluido"]) 
+    prioridade = st.selectbox("Prioridade", lista_prioridade, index=lista_prioridade.index(tarefa["PRIORIDADE"])) 
+    status = st.selectbox("Status", lista_status, index=lista_status.index(tarefa["STATUS"])) 
     prazo = st.date_input("Prazo", value=datetime.strptime(tarefa["DATA_VENCIMENTO"], "%d/%m/%Y").date()) 
     diferença = prazo - datetime.today().date()
     prazo = diferença.days
