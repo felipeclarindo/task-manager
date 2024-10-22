@@ -47,7 +47,7 @@ fastapi dev api.py
 4. Execute a GUI em outro terminal:
 ```bash
 cd app
-streamlit run app.py
+streamlit run ./main.py
 ```
 Não esqueça de trocar os caminhos (path), para rodar os comandos inicializando a aplicação
 
