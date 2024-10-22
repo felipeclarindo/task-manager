@@ -43,13 +43,13 @@ pip install -r requirements.txt
 cd api
 fastapi dev api.py
 ```
-
+'
 4. Execute a GUI em outro terminal:
 ```bash
-cd app
-streamlit run ./main.py
+streamlit run main.py
 ```
-Não esqueça de trocar os caminhos (path), para rodar os comandos inicializando a aplicação
+
+Não esqueça de conferir os caminhos (path), para rodar os comandos inicializando a aplicação da forma correta!
 
 ## Equipe
 
