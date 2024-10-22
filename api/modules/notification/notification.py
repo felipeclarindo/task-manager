@@ -1,12 +1,11 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import os
 
 class Notificador:
-    def __init__(self):
-        self.email_user = os.getenv("EMAIL")
-        self.email_pass = os.getenv("EMAIL_PASSWORD")
+    def init(self):
+        self.email_user = "taskmanagerfiap@gmail.com"
+        self.email_pass = "qefjfollbqfwugxo"
 
     def send_email(self, to_email: str, subject: str, message_body: str) -> None:
         try:
