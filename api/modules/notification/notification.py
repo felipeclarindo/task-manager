@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 class Notificador:
-    def init(self):
+    def __init__(self):
         self.email_user = "taskmanagerfiap@gmail.com"
         self.email_pass = "qefjfollbqfwugxo"
 
