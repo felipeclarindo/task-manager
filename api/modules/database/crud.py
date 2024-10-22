@@ -131,7 +131,7 @@ class Crud:
                     f"Título: {titulo};\n"
                     f"Descrição: {descricao};\n"
                     f"Prioridade: {prioridade};\n"
-                    f"Prazo de: {prazo} dias;\n"
+                    f"Prazo de: {prazo} dia(s);\n"
                 )
                 print("Enviando o email")
                 self.notification.send_email(email, subject, message_body)
@@ -192,7 +192,7 @@ class Crud:
                     f"Título: {titulo};\n"
                     f"Descrição: {descricao};\n"
                     f"Prioridade: {prioridade};\n"
-                    f"Prazo de: {prazo} dias;\n"
+                    f"Prazo de: {prazo} dia(s);\n"
                     f"Status: {status};\n"
                 )
                 self.notification.send_email(email, subject, message_body)
