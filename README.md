@@ -43,7 +43,7 @@ pip install -r requirements.txt
 cd api
 fastapi dev api.py
 ```
-
+'
 4. Execute a GUI em outro terminal:
 ```bash
 streamlit run main.py
