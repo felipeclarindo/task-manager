@@ -1,6 +1,6 @@
-oracledb
-requests
-fastapi
-python-dotenv
+oracledb==2.5.1
+requests==2.32.3
+fastapi==0.115.8
+python-dotenv==1.0.1
+streamlit==1.42.0
 fastapi[standard]
-streamlit

@@ -1,5 +1,6 @@
 import re
 
+
 class ValidateError(Exception):
     pass
 
@@ -23,7 +24,6 @@ def validate_title(title: str) -> bool:
     except Exception as e:
         print(f"Erro {e}")
     return False
-
 
 
 def validate_prioridade(prioridade: str) -> bool:
@@ -89,14 +89,14 @@ def validate_email(email: str) -> bool:
     try:
         if not email:
             raise ValueError("O número não pode ser vazio.")
-        
+
         email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 
         if re.match(email_regex, email):
             return True
         else:
             raise ValueError("Formato de e-mail inválido.")
-            
+
     except ValidateError as e:
         print(f"Erro de Validação: {e}")
     except ValueError as e:
@@ -106,13 +106,14 @@ def validate_email(email: str) -> bool:
 
     return False
 
+
 def validate_desc(descricao: str) -> bool:
     try:
         if not descricao:
             raise ValueError("A descrição não pode ser vazia.")
-        
+
         return True
-        
+
     except ValidateError as e:
         print(f"Erro de Validação: {e}")
     except ValueError as e:

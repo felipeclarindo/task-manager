@@ -1,6 +1,7 @@
 from datetime import date, timedelta, datetime
 from enum import StrEnum
 
+
 class EstadoUser(StrEnum):
     LIBERADO = "liberado"
     BLOQUEADO = "bloqueado"
@@ -20,7 +21,6 @@ def check_user_state(validacoes: list) -> EstadoUser:
 
 
 def date_today() -> str:
-
     data = date.today()
     return data.strftime("%Y/%m/%d")
 
