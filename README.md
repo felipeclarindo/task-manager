@@ -1,50 +1,82 @@
+🌍 [Leia em Português](README.pt-BR.md)
+
 # Task Manager
 
-Gerenciador de tarefas desenvolvido em Python, utilizando oracledb para inserção e manipulação de dados.
+Web application developed in python using  `streamlit` to manager task integrated with database(oracle) by api developed using `fastapi`.
 
-## Funcionalidades
+## Technologies Used
 
-- **Criar Tarefas:** Permite a criação de novas tarefas com informações detalhadas, como título, descrição, data de vencimento e prioridade.
+- `fastapi` - Api development.
+- `oracledb` - Connection with the database.
+- `requests` - Make request to the api.
+- `python-dotenv` - Get the environment variables.
+- `streamlit` - Interface development.
 
-- **Atualizar Tarefas:** O sistema permite a edição das tarefas existentes, ajustando campos como status, prioridade ou data de entrega.
+## Features
 
-- **Excluir Tarefas:** Possibilidade de remover tarefas quando concluídas ou não mais necessárias.
+- `Task Management`: Complete handling of tasks such as Create, Edit, Delete and List.
+- `Oracle Database`: All information is stored and manipulated through a connection to OracleDB, ensuring data persistence and security.
+- `Email notification system`: Receive notifications about your tasks in your email.
+- `Report`: Report on the pending, in progress, and completed tasks.
 
-- **Listagem de Tarefas:** Visualização de todas as tarefas criadas, filtradas por status, prioridade ou data.
+## Steps to install and run
 
-- **Banco de Dados Oracle:** Todas as informações são armazenadas e manipuladas através de uma conexão com o OracleDB, garantindo persistência e segurança dos dados.
-
-- **Relatorio:** Relátorio sobre as tarefas pedentes, concluidas e em atraso.
-
-## Requisitos
-
-- Python 3.x
-- oracledb
-
-## Instalação
-
-1. Clone o repositório:
+1. Clone the Repository:
 
 ```bash
-git clone https://github.com/seu-usuario/task-manager.git
+git clone https://github.com/felipeclarindo/task-manager.git
 ```
 
-2. Instale as dependências necessárias:
+2. Enter directory:
 
 ```bash
-pip install -r requirements.txt
+cd task-manager
 ```
 
-3. Execute o gerenciador de tarefas:
+3. Create `Virtual Environment`:
 
 ```bash
-python main.py
+python -m venv .venv
 ```
 
-## Equipe
+4. Enable `Virtual Environment` by running the `.bat` file in `.venv/Scripts/activate.bat`.
 
-- Samih Hage Neto - **RM: 557260**
-- Felipe Gabriel Lopes Pinheiro Clarindo - **RM: 554547**
-- Jennifer Suzuki - **RM: 554661**
-- Victor Augusto Fávaro - **RM: 555059**
-- Felipe Levi Stephens Fidelix - **RM: 556426**
+5. Install dependencies :
+
+```bash
+pip install - r requirements.txt
+```
+
+6. Create the '.env' file based on the [.env.example](.env.example) for connection to the database.
+
+7. Run the api server:
+
+```bash
+fastapi dev src/api/api.py
+```
+
+7. Run the application
+
+```bash
+streamlit run src/main.py
+```
+
+Não esqueça de conferir os caminhos (path), para rodar os comandos inicializando a aplicação da forma correta!
+
+8. Don't forget to check the paths, to run the commands initializing the application correctly and check if the api is running as well when running the application!
+
+## Contribution
+
+Contributions are welcome! If you have suggestions for improvements, feel free to open an issue or submit a pull request.
+
+## Author
+
+**Felipe Clarindo**
+
+- [LinkedIn](https://www.linkedin.com/in/felipeclarindo)
+- [Instagram](https://www.instagram.com/lipethecoder)
+- [GitHub](https://github.com/felipeclarindo)
+
+## License
+
+This project is licensed under the [GNU Affero License](https://www.gnu.org/licenses/agpl-3.0.html).
